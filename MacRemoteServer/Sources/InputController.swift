@@ -9,6 +9,8 @@ private let NX_KEYTYPE_PREVIOUS: Int32 = 18
 private let NX_KEYTYPE_SOUND_UP: Int32 = 0
 private let NX_KEYTYPE_SOUND_DOWN: Int32 = 1
 private let NX_KEYTYPE_MUTE: Int32 = 7
+private let NX_KEYTYPE_BRIGHTNESS_UP: Int32 = 2
+private let NX_KEYTYPE_BRIGHTNESS_DOWN: Int32 = 3
 
 /// Controls mouse and keyboard input on macOS using CGEvent API
 final class InputController {
@@ -136,6 +138,10 @@ final class InputController {
             keyCode = NX_KEYTYPE_SOUND_DOWN
         case .mute:
             keyCode = NX_KEYTYPE_MUTE
+        case .brightnessUp:
+            keyCode = NX_KEYTYPE_BRIGHTNESS_UP
+        case .brightnessDown:
+            keyCode = NX_KEYTYPE_BRIGHTNESS_DOWN
         }
         postMediaKeyEvent(keyCode: keyCode)
     }

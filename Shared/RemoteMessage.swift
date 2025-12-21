@@ -24,6 +24,8 @@ enum RemoteMessage: Codable {
         case volumeUp
         case volumeDown
         case mute
+        case brightnessUp
+        case brightnessDown
     }
 }
 
