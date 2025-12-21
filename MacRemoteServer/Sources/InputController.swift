@@ -180,22 +180,23 @@ final class InputController {
     }
 
     private func lockScreen() {
-        let cgSessionPath = "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession"
+        // Simulate Ctrl+Cmd+Q keyboard shortcut to lock screen
+        let keyQ: UInt16 = 12
+        let flags = CGEventFlags([.maskCommand, .maskControl])
 
-        guard FileManager.default.fileExists(atPath: cgSessionPath) else {
-            print("[InputController] CGSession not found at expected path: \(cgSessionPath)")
+        guard let keyDown = CGEvent(keyboardEventSource: nil, virtualKey: keyQ, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: keyQ, keyDown: false) else {
+            print("[InputController] Failed to create lock screen key events")
             return
         }
 
-        let task = Process()
-        task.executableURL = URL(fileURLWithPath: cgSessionPath)
-        task.arguments = ["-suspend"]
-        do {
-            try task.run()
-            print("[InputController] Lock screen command executed")
-        } catch {
-            print("[InputController] Failed to lock screen: \(error)")
-        }
+        keyDown.flags = flags
+        keyUp.flags = flags
+
+        keyDown.post(tap: .cgSessionEventTap)
+        keyUp.post(tap: .cgSessionEventTap)
+
+        print("[InputController] Lock screen command executed (Ctrl+Cmd+Q)")
     }
 
     // MARK: - Screen Info
