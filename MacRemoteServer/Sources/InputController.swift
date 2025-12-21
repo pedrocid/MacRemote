@@ -121,7 +121,9 @@ final class InputController {
 
     static func checkAccessibilityPermission(prompt: Bool = false) -> Bool {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: prompt] as CFDictionary
-        return AXIsProcessTrustedWithOptions(options)
+        let result = AXIsProcessTrustedWithOptions(options)
+        print("[InputController] Accessibility check (prompt=\(prompt)): \(result)")
+        return result
     }
 
     static func openAccessibilityPreferences() {
