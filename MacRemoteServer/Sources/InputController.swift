@@ -205,6 +205,100 @@ final class InputController {
         NSScreen.main?.frame.size ?? CGSize(width: 1920, height: 1080)
     }
 
+    // MARK: - App Launcher
+
+    func getInstalledApps() -> [AppInfo] {
+        let systemAppsURL = URL(fileURLWithPath: "/Applications")
+        let userAppsURL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Applications")
+
+        var allAppURLs: [URL] = []
+
+        if let systemContents = try? FileManager.default.contentsOfDirectory(
+            at: systemAppsURL,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) {
+            allAppURLs.append(contentsOf: systemContents)
+        } else {
+            print("[InputController] Failed to read /Applications directory")
+        }
+
+        if let userContents = try? FileManager.default.contentsOfDirectory(
+            at: userAppsURL,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) {
+            allAppURLs.append(contentsOf: userContents)
+        }
+
+        let apps = allAppURLs
+            .filter { $0.pathExtension == "app" }
+            .compactMap { url -> AppInfo? in
+                let name = url.deletingPathExtension().lastPathComponent
+                guard let bundle = Bundle(url: url),
+                      let bundleId = bundle.bundleIdentifier else {
+                    return nil
+                }
+
+                let icon = NSWorkspace.shared.icon(forFile: url.path)
+                let iconData = resizeAndEncodeIcon(icon, size: 32)
+
+                return AppInfo(name: name, bundleId: bundleId, icon: iconData)
+            }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+
+        print("[InputController] Found \(apps.count) applications")
+        return apps
+    }
+
+    func launchApp(bundleId: String) -> Bool {
+        guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) else {
+            print("[InputController] App not found: \(bundleId)")
+            return false
+        }
+
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+
+        NSWorkspace.shared.openApplication(at: appURL, configuration: configuration) { app, error in
+            if let error = error {
+                print("[InputController] Failed to launch \(bundleId): \(error)")
+            } else {
+                print("[InputController] Launched \(app?.localizedName ?? bundleId)")
+            }
+        }
+        return true
+    }
+
+    private func resizeAndEncodeIcon(_ image: NSImage, size: CGFloat) -> Data? {
+        let newSize = NSSize(width: size, height: size)
+
+        guard let bitmapRep = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: Int(newSize.width),
+            pixelsHigh: Int(newSize.height),
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        ) else { return nil }
+
+        bitmapRep.size = newSize
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
+        image.draw(in: NSRect(origin: .zero, size: newSize),
+                   from: NSRect(origin: .zero, size: image.size),
+                   operation: .copy,
+                   fraction: 1.0)
+        NSGraphicsContext.restoreGraphicsState()
+
+        return bitmapRep.representation(using: .png, properties: [:])
+    }
+
     // MARK: - Permissions
 
     static func checkAccessibilityPermission(prompt: Bool = false) -> Bool {

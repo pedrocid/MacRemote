@@ -60,9 +60,12 @@ final class NetworkServer {
     func send(_ message: ServerMessage, to connection: NWConnection) {
         do {
             let data = try MessageFrame.encode(message)
+            print("[Server] Sending \(data.count) bytes")
             connection.send(content: data, completion: .contentProcessed { error in
                 if let error = error {
                     print("[Server] Send error: \(error)")
+                } else {
+                    print("[Server] Send completed successfully")
                 }
             })
         } catch {

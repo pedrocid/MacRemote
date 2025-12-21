@@ -125,6 +125,20 @@ final class ServerManager: ObservableObject {
 
         case .ping:
             server.send(.pong, to: connection)
+
+        case .requestAppList:
+            print("[ServerManager] App list requested")
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                guard let self = self else { return }
+                let apps = self.inputController.getInstalledApps()
+                print("[ServerManager] Sending \(apps.count) apps")
+                self.server.send(.appList(apps: apps), to: connection)
+            }
+
+        case .launchApp(let bundleId):
+            if !inputController.launchApp(bundleId: bundleId) {
+                server.send(.error(message: "Failed to launch app: \(bundleId)"), to: connection)
+            }
         }
     }
 }

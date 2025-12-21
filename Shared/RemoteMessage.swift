@@ -1,5 +1,22 @@
 import Foundation
 
+/// Information about an installed application
+struct AppInfo: Codable, Identifiable, Hashable, Sendable {
+    let name: String
+    let bundleId: String
+    let icon: Data?
+
+    var id: String { bundleId }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(bundleId)
+    }
+
+    static func == (lhs: AppInfo, rhs: AppInfo) -> Bool {
+        lhs.bundleId == rhs.bundleId
+    }
+}
+
 /// Messages sent from iOS client to macOS server
 enum RemoteMessage: Codable {
     case move(dx: Double, dy: Double)
@@ -12,6 +29,8 @@ enum RemoteMessage: Codable {
     case media(action: MediaAction)
     case system(action: SystemAction)
     case ping
+    case requestAppList
+    case launchApp(bundleId: String)
 
     enum MouseButton: String, Codable {
         case left
@@ -39,6 +58,7 @@ enum ServerMessage: Codable {
     case connected(screenWidth: Double, screenHeight: Double)
     case pong
     case error(message: String)
+    case appList(apps: [AppInfo])
 }
 
 /// Protocol message wrapper with length prefix for TCP framing
