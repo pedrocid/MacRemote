@@ -2,6 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "Bright -" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12,6 +13,7 @@
       }
     },
     "Bright +" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21,7 +23,11 @@
         }
       }
     },
+    "Make sure MacRemote Server is running on your Mac" : {
+
+    },
     "Mute" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -32,6 +38,7 @@
       }
     },
     "Next" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -41,7 +48,11 @@
         }
       }
     },
+    "Not Connected" : {
+
+    },
     "Play/Pause" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -52,6 +63,7 @@
       }
     },
     "Previous" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -71,7 +83,14 @@
         }
       }
     },
+    "Scroll" : {
+
+    },
+    "Searching for Macs..." : {
+
+    },
     "Tap to activate keyboard" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -81,7 +100,14 @@
         }
       }
     },
+    "Tap to connect" : {
+
+    },
+    "Touch to move cursor" : {
+
+    },
     "Type on the keyboard below" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -92,6 +118,7 @@
       }
     },
     "Vol -" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -102,6 +129,7 @@
       }
     },
     "Vol +" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
