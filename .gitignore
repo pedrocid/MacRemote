@@ -1,0 +1,36 @@
+# Xcode
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+*.xcschememanagement.plist
+
+# Build
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.swiftpm/
+.build/
+Packages/
+Package.resolved
+
+# Tuist
+Tuist/.build
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/
+
+# OS
+.DS_Store
+*.swp
+*~
