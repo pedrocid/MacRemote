@@ -7,6 +7,8 @@ final class NetworkClient: ObservableObject {
     @Published var isConnected = false
     @Published var screenSize: CGSize = .zero
     @Published var connectionError: String?
+    @Published var apps: [AppInfo] = []
+    @Published var isLoadingApps = false
 
     private var connection: NWConnection?
     private let queue = DispatchQueue(label: "com.macremote.client", qos: .userInteractive)
@@ -131,6 +133,17 @@ final class NetworkClient: ObservableObject {
         send(.system(action: .lock))
     }
 
+    // MARK: - App Launcher
+
+    func requestAppList() {
+        isLoadingApps = true
+        send(.requestAppList)
+    }
+
+    func launchApp(bundleId: String) {
+        send(.launchApp(bundleId: bundleId))
+    }
+
     // MARK: - Receiving
 
     private func startReceiving() {
@@ -183,6 +196,11 @@ final class NetworkClient: ObservableObject {
 
         case .error(let message):
             connectionError = message
+
+        case .appList(let appList):
+            apps = appList
+            isLoadingApps = false
+            print("[Client] Received \(appList.count) apps")
         }
     }
 }

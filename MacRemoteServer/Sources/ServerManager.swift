@@ -125,6 +125,15 @@ final class ServerManager: ObservableObject {
 
         case .ping:
             server.send(.pong, to: connection)
+
+        case .requestAppList:
+            let apps = inputController.getInstalledApps()
+            server.send(.appList(apps: apps), to: connection)
+
+        case .launchApp(let bundleId):
+            if !inputController.launchApp(bundleId: bundleId) {
+                server.send(.error(message: "Failed to launch app: \(bundleId)"), to: connection)
+            }
         }
     }
 }

@@ -12,7 +12,8 @@ struct RemoteControlView: View {
                 Image(systemName: "hand.point.up.fill").tag(0)
                 Image(systemName: "speaker.wave.2.fill").tag(1)
                 Image(systemName: "keyboard").tag(2)
-                Image(systemName: "gearshape.fill").tag(3)
+                Image(systemName: "square.grid.2x2").tag(3)
+                Image(systemName: "gearshape.fill").tag(4)
             }
             .pickerStyle(.segmented)
             .padding(.horizontal)
@@ -23,10 +24,17 @@ struct RemoteControlView: View {
                 trackpadTab.tag(0)
                 mediaTab.tag(1)
                 keyboardTab.tag(2)
-                systemTab.tag(3)
+                appsTab.tag(3)
+                systemTab.tag(4)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
         }
+    }
+
+    // MARK: - Apps Tab
+
+    private var appsTab: some View {
+        AppsView(client: client)
     }
 
     // MARK: - Trackpad Tab
