@@ -34,7 +34,8 @@ let project = Project(
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "5.9",
-                    "CODE_SIGN_STYLE": "Automatic"
+                    "CODE_SIGN_STYLE": "Automatic",
+                    "DEVELOPMENT_TEAM": "746CH7LGJ5"
                 ]
             )
         )
