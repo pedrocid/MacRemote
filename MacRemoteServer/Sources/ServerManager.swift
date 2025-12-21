@@ -120,6 +120,9 @@ final class ServerManager: ObservableObject {
         case .media(let action):
             inputController.mediaAction(action)
 
+        case .system(let action):
+            inputController.systemAction(action)
+
         case .ping:
             server.send(.pong, to: connection)
         }

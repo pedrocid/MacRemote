@@ -10,6 +10,7 @@ enum RemoteMessage: Codable {
     case scroll(dx: Double, dy: Double)
     case key(code: UInt16, down: Bool, flags: UInt64)
     case media(action: MediaAction)
+    case system(action: SystemAction)
     case ping
 
     enum MouseButton: String, Codable {
@@ -26,6 +27,10 @@ enum RemoteMessage: Codable {
         case mute
         case brightnessUp
         case brightnessDown
+    }
+
+    enum SystemAction: String, Codable {
+        case lock
     }
 }
 

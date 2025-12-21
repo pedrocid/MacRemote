@@ -170,6 +170,35 @@ final class InputController {
         doKey(down: false)
     }
 
+    // MARK: - System Actions
+
+    func systemAction(_ action: RemoteMessage.SystemAction) {
+        switch action {
+        case .lock:
+            lockScreen()
+        }
+    }
+
+    private func lockScreen() {
+        // Simulate Ctrl+Cmd+Q keyboard shortcut to lock screen
+        let keyQ: UInt16 = 12
+        let flags = CGEventFlags([.maskCommand, .maskControl])
+
+        guard let keyDown = CGEvent(keyboardEventSource: nil, virtualKey: keyQ, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: nil, virtualKey: keyQ, keyDown: false) else {
+            print("[InputController] Failed to create lock screen key events")
+            return
+        }
+
+        keyDown.flags = flags
+        keyUp.flags = flags
+
+        keyDown.post(tap: .cgSessionEventTap)
+        keyUp.post(tap: .cgSessionEventTap)
+
+        print("[InputController] Lock screen command executed (Ctrl+Cmd+Q)")
+    }
+
     // MARK: - Screen Info
 
     var screenSize: CGSize {
