@@ -2,6 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "Bright -" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12,6 +13,7 @@
       }
     },
     "Bright +" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21,7 +23,96 @@
         }
       }
     },
+    "cancel" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
+          }
+        }
+      }
+    },
+    "lock_screen" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Screen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquear Pantalla"
+          }
+        }
+      }
+    },
+    "lock_screen_confirm" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquear"
+          }
+        }
+      }
+    },
+    "lock_screen_confirmation_message" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will lock your Mac. You will need to enter your password to unlock it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esto bloqueará tu Mac. Necesitarás introducir tu contraseña para desbloquearlo."
+          }
+        }
+      }
+    },
+    "lock_screen_confirmation_title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Screen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Bloquear Pantalla?"
+          }
+        }
+      }
+    },
+    "Make sure MacRemote Server is running on your Mac" : {
+
+    },
     "Mute" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -32,6 +123,7 @@
       }
     },
     "Next" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -41,7 +133,11 @@
         }
       }
     },
+    "Not Connected" : {
+
+    },
     "Play/Pause" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -52,6 +148,7 @@
       }
     },
     "Previous" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -71,7 +168,14 @@
         }
       }
     },
+    "Scroll" : {
+
+    },
+    "Searching for Macs..." : {
+
+    },
     "Tap to activate keyboard" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -81,7 +185,14 @@
         }
       }
     },
+    "Tap to connect" : {
+
+    },
+    "Touch to move cursor" : {
+
+    },
     "Type on the keyboard below" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -92,6 +203,7 @@
       }
     },
     "Vol -" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -102,91 +214,12 @@
       }
     },
     "Vol +" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vol +"
-          }
-        }
-      }
-    },
-    "cancel" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancelar"
-          }
-        }
-      }
-    },
-    "lock_screen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lock Screen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bloquear Pantalla"
-          }
-        }
-      }
-    },
-    "lock_screen_confirm" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lock"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bloquear"
-          }
-        }
-      }
-    },
-    "lock_screen_confirmation_message" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This will lock your Mac. You will need to enter your password to unlock it."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esto bloqueará tu Mac. Necesitarás introducir tu contraseña para desbloquearlo."
-          }
-        }
-      }
-    },
-    "lock_screen_confirmation_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lock Screen?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Bloquear Pantalla?"
           }
         }
       }
