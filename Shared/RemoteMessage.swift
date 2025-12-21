@@ -9,11 +9,21 @@ enum RemoteMessage: Codable {
     case mouseUp(button: MouseButton)
     case scroll(dx: Double, dy: Double)
     case key(code: UInt16, down: Bool, flags: UInt64)
+    case media(action: MediaAction)
     case ping
 
     enum MouseButton: String, Codable {
         case left
         case right
+    }
+
+    enum MediaAction: String, Codable {
+        case playPause
+        case nextTrack
+        case previousTrack
+        case volumeUp
+        case volumeDown
+        case mute
     }
 }
 

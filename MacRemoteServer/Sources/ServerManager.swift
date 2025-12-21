@@ -117,6 +117,9 @@ final class ServerManager: ObservableObject {
         case .key(let code, let down, let flags):
             inputController.keyEvent(code: code, down: down, flags: flags)
 
+        case .media(let action):
+            inputController.mediaAction(action)
+
         case .ping:
             server.send(.pong, to: connection)
         }

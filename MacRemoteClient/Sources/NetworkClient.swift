@@ -89,6 +89,32 @@ final class NetworkClient: ObservableObject {
         send(.key(code: code, down: false, flags: flags))
     }
 
+    // MARK: - Media Controls
+
+    func playPause() {
+        send(.media(action: .playPause))
+    }
+
+    func nextTrack() {
+        send(.media(action: .nextTrack))
+    }
+
+    func previousTrack() {
+        send(.media(action: .previousTrack))
+    }
+
+    func volumeUp() {
+        send(.media(action: .volumeUp))
+    }
+
+    func volumeDown() {
+        send(.media(action: .volumeDown))
+    }
+
+    func mute() {
+        send(.media(action: .mute))
+    }
+
     // MARK: - Receiving
 
     private func startReceiving() {

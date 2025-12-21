@@ -2,6 +2,14 @@ import Foundation
 import CoreGraphics
 import AppKit
 
+// Media key constants from IOKit/hidsystem/ev_keymap.h
+private let NX_KEYTYPE_PLAY: Int32 = 16
+private let NX_KEYTYPE_NEXT: Int32 = 17
+private let NX_KEYTYPE_PREVIOUS: Int32 = 18
+private let NX_KEYTYPE_SOUND_UP: Int32 = 0
+private let NX_KEYTYPE_SOUND_DOWN: Int32 = 1
+private let NX_KEYTYPE_MUTE: Int32 = 7
+
 /// Controls mouse and keyboard input on macOS using CGEvent API
 final class InputController {
 
@@ -109,6 +117,51 @@ final class InputController {
 
         event.flags = CGEventFlags(rawValue: flags)
         event.post(tap: .cgSessionEventTap)
+    }
+
+    // MARK: - Media Controls
+
+    func mediaAction(_ action: RemoteMessage.MediaAction) {
+        let keyCode: Int32
+        switch action {
+        case .playPause:
+            keyCode = NX_KEYTYPE_PLAY
+        case .nextTrack:
+            keyCode = NX_KEYTYPE_NEXT
+        case .previousTrack:
+            keyCode = NX_KEYTYPE_PREVIOUS
+        case .volumeUp:
+            keyCode = NX_KEYTYPE_SOUND_UP
+        case .volumeDown:
+            keyCode = NX_KEYTYPE_SOUND_DOWN
+        case .mute:
+            keyCode = NX_KEYTYPE_MUTE
+        }
+        postMediaKeyEvent(keyCode: keyCode)
+    }
+
+    private func postMediaKeyEvent(keyCode: Int32) {
+        func doKey(down: Bool) {
+            let flags = NSEvent.ModifierFlags(rawValue: (down ? 0xa00 : 0xb00))
+            let data1 = Int((keyCode << 16) | (down ? 0xa00 : 0xb00))
+
+            guard let event = NSEvent.otherEvent(
+                with: .systemDefined,
+                location: .zero,
+                modifierFlags: flags,
+                timestamp: 0,
+                windowNumber: 0,
+                context: nil,
+                subtype: 8,
+                data1: data1,
+                data2: -1
+            ) else { return }
+
+            event.cgEvent?.post(tap: .cgSessionEventTap)
+        }
+
+        doKey(down: true)
+        doKey(down: false)
     }
 
     // MARK: - Screen Info
