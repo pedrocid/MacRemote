@@ -180,8 +180,15 @@ final class InputController {
     }
 
     private func lockScreen() {
+        let cgSessionPath = "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession"
+
+        guard FileManager.default.fileExists(atPath: cgSessionPath) else {
+            print("[InputController] CGSession not found at expected path: \(cgSessionPath)")
+            return
+        }
+
         let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession")
+        task.executableURL = URL(fileURLWithPath: cgSessionPath)
         task.arguments = ["-suspend"]
         do {
             try task.run()
