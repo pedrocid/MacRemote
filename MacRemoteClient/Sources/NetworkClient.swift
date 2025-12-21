@@ -115,6 +115,16 @@ final class NetworkClient: ObservableObject {
         send(.media(action: .mute))
     }
 
+    // MARK: - Brightness Controls
+
+    func brightnessUp() {
+        send(.media(action: .brightnessUp))
+    }
+
+    func brightnessDown() {
+        send(.media(action: .brightnessDown))
+    }
+
     // MARK: - Receiving
 
     private func startReceiving() {

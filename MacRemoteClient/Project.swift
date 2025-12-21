@@ -30,7 +30,9 @@ let project = Project(
                 "Sources/**",
                 "../Shared/**"
             ],
-            resources: [],
+            resources: [
+                "Resources/**"
+            ],
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "5.9",

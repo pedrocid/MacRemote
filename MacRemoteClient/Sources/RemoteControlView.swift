@@ -118,6 +118,20 @@ struct RemoteControlView: View {
                 }
             }
 
+            Divider()
+                .padding(.horizontal, 40)
+
+            // Brightness controls
+            HStack(spacing: 40) {
+                MediaButton(icon: "sun.min.fill", label: "Bright -") {
+                    client.brightnessDown()
+                }
+
+                MediaButton(icon: "sun.max.fill", label: "Bright +") {
+                    client.brightnessUp()
+                }
+            }
+
             Spacer()
         }
         .padding()
