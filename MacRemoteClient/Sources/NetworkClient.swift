@@ -125,6 +125,12 @@ final class NetworkClient: ObservableObject {
         send(.media(action: .brightnessDown))
     }
 
+    // MARK: - System Controls
+
+    func lockScreen() {
+        send(.system(action: .lock))
+    }
+
     // MARK: - Receiving
 
     private func startReceiving() {

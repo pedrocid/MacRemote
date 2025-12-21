@@ -170,6 +170,27 @@ final class InputController {
         doKey(down: false)
     }
 
+    // MARK: - System Actions
+
+    func systemAction(_ action: RemoteMessage.SystemAction) {
+        switch action {
+        case .lock:
+            lockScreen()
+        }
+    }
+
+    private func lockScreen() {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession")
+        task.arguments = ["-suspend"]
+        do {
+            try task.run()
+            print("[InputController] Lock screen command executed")
+        } catch {
+            print("[InputController] Failed to lock screen: \(error)")
+        }
+    }
+
     // MARK: - Screen Info
 
     var screenSize: CGSize {

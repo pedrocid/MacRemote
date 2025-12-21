@@ -12,6 +12,7 @@ struct RemoteControlView: View {
                 Image(systemName: "hand.point.up.fill").tag(0)
                 Image(systemName: "speaker.wave.2.fill").tag(1)
                 Image(systemName: "keyboard").tag(2)
+                Image(systemName: "gearshape.fill").tag(3)
             }
             .pickerStyle(.segmented)
             .padding(.horizontal)
@@ -22,6 +23,7 @@ struct RemoteControlView: View {
                 trackpadTab.tag(0)
                 mediaTab.tag(1)
                 keyboardTab.tag(2)
+                systemTab.tag(3)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
         }
@@ -141,6 +143,12 @@ struct RemoteControlView: View {
 
     private var keyboardTab: some View {
         DirectKeyboardView(client: client)
+    }
+
+    // MARK: - System Tab
+
+    private var systemTab: some View {
+        SystemView(client: client)
     }
 }
 
@@ -306,5 +314,49 @@ struct QuickActionButton: View {
             .cornerRadius(10)
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - System View
+
+struct SystemView: View {
+    @ObservedObject var client: NetworkClient
+    @State private var showingLockConfirmation = false
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            // Lock Screen Button
+            Button {
+                showingLockConfirmation = true
+            } label: {
+                VStack(spacing: 12) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 48))
+                    Text(String(localized: "lock_screen"))
+                        .font(.headline)
+                }
+                .frame(width: 140, height: 140)
+                .background(Color(.systemGray5))
+                .cornerRadius(20)
+            }
+            .buttonStyle(.plain)
+            .confirmationDialog(
+                String(localized: "lock_screen_confirmation_title"),
+                isPresented: $showingLockConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button(String(localized: "lock_screen_confirm"), role: .destructive) {
+                    client.lockScreen()
+                }
+                Button(String(localized: "cancel"), role: .cancel) {}
+            } message: {
+                Text(String(localized: "lock_screen_confirmation_message"))
+            }
+
+            Spacer()
+        }
+        .padding()
     }
 }
