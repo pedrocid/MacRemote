@@ -1,7 +1,7 @@
 import Foundation
 
 /// Information about an installed application
-struct AppInfo: Codable, Identifiable, Hashable {
+struct AppInfo: Codable, Identifiable, Hashable, Sendable {
     let name: String
     let bundleId: String
     let icon: Data?

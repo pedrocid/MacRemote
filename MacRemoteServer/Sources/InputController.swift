@@ -208,18 +208,31 @@ final class InputController {
     // MARK: - App Launcher
 
     func getInstalledApps() -> [AppInfo] {
-        let applicationsURL = URL(fileURLWithPath: "/Applications")
+        let systemAppsURL = URL(fileURLWithPath: "/Applications")
+        let userAppsURL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Applications")
 
-        guard let contents = try? FileManager.default.contentsOfDirectory(
-            at: applicationsURL,
+        var allAppURLs: [URL] = []
+
+        if let systemContents = try? FileManager.default.contentsOfDirectory(
+            at: systemAppsURL,
             includingPropertiesForKeys: nil,
             options: [.skipsHiddenFiles]
-        ) else {
+        ) {
+            allAppURLs.append(contentsOf: systemContents)
+        } else {
             print("[InputController] Failed to read /Applications directory")
-            return []
         }
 
-        let apps = contents
+        if let userContents = try? FileManager.default.contentsOfDirectory(
+            at: userAppsURL,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) {
+            allAppURLs.append(contentsOf: userContents)
+        }
+
+        let apps = allAppURLs
             .filter { $0.pathExtension == "app" }
             .compactMap { url -> AppInfo? in
                 let name = url.deletingPathExtension().lastPathComponent

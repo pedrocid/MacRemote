@@ -136,7 +136,9 @@ final class NetworkClient: ObservableObject {
     // MARK: - App Launcher
 
     func requestAppList() {
-        isLoadingApps = true
+        DispatchQueue.main.async {
+            self.isLoadingApps = true
+        }
         send(.requestAppList)
     }
 
