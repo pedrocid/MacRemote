@@ -167,11 +167,17 @@ final class NetworkClient: ObservableObject {
             }
 
             let length = lengthData.withUnsafeBytes { $0.load(as: UInt32.self).bigEndian }
+            print("[Client] Expecting message of \(length) bytes")
 
-            connection.receive(minimumIncompleteLength: Int(length), maximumLength: Int(length)) { [weak self] messageData, _, _, _ in
+            connection.receive(minimumIncompleteLength: Int(length), maximumLength: Int(length)) { [weak self] messageData, _, _, error in
                 guard let self = self else { return }
 
+                if let error = error {
+                    print("[Client] Receive error: \(error)")
+                }
+
                 if let data = messageData {
+                    print("[Client] Received \(data.count) bytes")
                     do {
                         let message = try MessageFrame.decode(data, as: ServerMessage.self)
                         DispatchQueue.main.async {
@@ -180,6 +186,8 @@ final class NetworkClient: ObservableObject {
                     } catch {
                         print("[Client] Decode error: \(error)")
                     }
+                } else {
+                    print("[Client] No data received")
                 }
 
                 self.startReceiving()
@@ -200,9 +208,10 @@ final class NetworkClient: ObservableObject {
             connectionError = message
 
         case .appList(let appList):
+            print("[Client] Processing app list with \(appList.count) apps")
             apps = appList
             isLoadingApps = false
-            print("[Client] Received \(appList.count) apps")
+            print("[Client] App list loaded successfully")
         }
     }
 }

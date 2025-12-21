@@ -158,8 +158,8 @@ struct AppGridItem: View {
             VStack(spacing: 8) {
                 ZStack(alignment: .topTrailing) {
                     appIcon
-                        .frame(width: 60, height: 60)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .frame(width: 48, height: 48)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
 
                     if isFavorite {
                         Image(systemName: "star.fill")
@@ -206,9 +206,9 @@ struct AppGridItem: View {
                 .aspectRatio(contentMode: .fit)
         } else {
             Image(systemName: "app.fill")
-                .font(.system(size: 40))
+                .font(.system(size: 32))
                 .foregroundStyle(.secondary)
-                .frame(width: 60, height: 60)
+                .frame(width: 48, height: 48)
                 .background(Color(.systemGray5))
         }
     }

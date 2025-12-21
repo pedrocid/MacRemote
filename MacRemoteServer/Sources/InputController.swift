@@ -242,7 +242,7 @@ final class InputController {
                 }
 
                 let icon = NSWorkspace.shared.icon(forFile: url.path)
-                let iconData = resizeAndEncodeIcon(icon, size: 64)
+                let iconData = resizeAndEncodeIcon(icon, size: 32)
 
                 return AppInfo(name: name, bundleId: bundleId, icon: iconData)
             }
