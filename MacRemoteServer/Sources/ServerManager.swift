@@ -61,11 +61,12 @@ final class ServerManager: ObservableObject {
     // MARK: - Permissions
 
     func checkPermissions() {
-        hasAccessibilityPermission = InputController.checkAccessibilityPermission()
+        hasAccessibilityPermission = InputController.checkAccessibilityPermission(prompt: false)
     }
 
     func requestAccessibilityPermission() {
-        hasAccessibilityPermission = InputController.checkAccessibilityPermission()
+        // Open System Preferences directly to Accessibility
+        InputController.openAccessibilityPreferences()
     }
 
     // MARK: - Private

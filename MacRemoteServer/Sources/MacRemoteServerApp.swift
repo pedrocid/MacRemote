@@ -57,11 +57,19 @@ struct MenuBarView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Button("Grant Permission") {
-                    serverManager.requestAccessibilityPermission()
+                HStack(spacing: 8) {
+                    Button("Open Settings") {
+                        serverManager.requestAccessibilityPermission()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+
+                    Button("Refresh") {
+                        serverManager.checkPermissions()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
             }
 
             // Error
