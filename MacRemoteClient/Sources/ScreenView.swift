@@ -5,7 +5,6 @@ struct ScreenView: View {
     @ObservedObject var client: NetworkClient
     @StateObject private var viewModel = ScreenViewModel()
     @State private var selectedQuality: RemoteMessage.StreamQuality = .medium
-    @State private var isFullscreen = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -169,20 +168,21 @@ struct ScreenView: View {
 
     // MARK: - Gesture Handling
 
-    @State private var dragStartLocation: CGPoint = .zero
+    @State private var lastTranslation: CGSize = .zero
     @State private var isDragging = false
 
     private func handleDrag(value: DragGesture.Value, in geometry: GeometryProxy, imageSize: CGSize) {
         if !isDragging {
-            dragStartLocation = value.startLocation
+            lastTranslation = .zero
             isDragging = true
         }
 
-        // Calculate the movement delta
-        let dx = value.translation.width
-        let dy = value.translation.height
+        // Calculate the delta since last update (not cumulative translation)
+        let dx = value.translation.width - lastTranslation.width
+        let dy = value.translation.height - lastTranslation.height
+        lastTranslation = CGSize(width: value.translation.width, height: value.translation.height)
 
-        // Scale factor based on screen vs image size
+        // Scale factor for mouse sensitivity
         let scaleFactor = 1.5
 
         client.move(dx: dx * scaleFactor, dy: dy * scaleFactor)
@@ -190,6 +190,7 @@ struct ScreenView: View {
 
     private func handleDragEnd(value: DragGesture.Value, in geometry: GeometryProxy, imageSize: CGSize) {
         isDragging = false
+        lastTranslation = .zero
 
         // Check if this was a tap (minimal movement)
         let distance = sqrt(pow(value.translation.width, 2) + pow(value.translation.height, 2))

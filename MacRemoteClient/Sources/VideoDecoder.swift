@@ -9,6 +9,9 @@ final class VideoDecoder {
     private var formatDescription: CMVideoFormatDescription?
     private var decompressionSession: VTDecompressionSession?
 
+    // Cached CIContext for efficient image conversion (creating per-frame is expensive)
+    private let ciContext = CIContext()
+
     // Callback for decoded frames
     var onFrameDecoded: ((UIImage) -> Void)?
 
@@ -140,15 +143,6 @@ final class VideoDecoder {
     }
 
     private func createFormatDescription(sps: Data, pps: Data) {
-        let parameterSetPointers: [UnsafePointer<UInt8>] = sps.withUnsafeBytes { spsPtr in
-            pps.withUnsafeBytes { ppsPtr in
-                [spsPtr.baseAddress!.assumingMemoryBound(to: UInt8.self),
-                 ppsPtr.baseAddress!.assumingMemoryBound(to: UInt8.self)]
-            }
-        }
-
-        let parameterSetSizes: [Int] = [sps.count, pps.count]
-
         var formatDesc: CMVideoFormatDescription?
 
         sps.withUnsafeBytes { spsBuffer in
@@ -204,18 +198,20 @@ final class VideoDecoder {
             decompressionOutputCallback: { decompressionOutputRefCon, sourceFrameRefCon, status, infoFlags, imageBuffer, presentationTimeStamp, presentationDuration in
 
                 guard status == noErr, let imageBuffer = imageBuffer else {
+                    if status != noErr {
+                        print("[VideoDecoder] Decompression failed with status: \(status)")
+                    }
                     return
                 }
 
-                // Convert CVPixelBuffer to UIImage
-                let ciImage = CIImage(cvPixelBuffer: imageBuffer)
-                let context = CIContext()
-                if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
-                    let uiImage = UIImage(cgImage: cgImage)
+                // Call back on main thread with the decoder's cached context
+                if let refCon = decompressionOutputRefCon {
+                    let decoder = Unmanaged<VideoDecoder>.fromOpaque(refCon).takeUnretainedValue()
 
-                    // Call back on main thread
-                    if let refCon = decompressionOutputRefCon {
-                        let decoder = Unmanaged<VideoDecoder>.fromOpaque(refCon).takeUnretainedValue()
+                    // Convert CVPixelBuffer to UIImage using cached CIContext
+                    let ciImage = CIImage(cvPixelBuffer: imageBuffer)
+                    if let cgImage = decoder.ciContext.createCGImage(ciImage, from: ciImage.extent) {
+                        let uiImage = UIImage(cgImage: cgImage)
                         DispatchQueue.main.async {
                             decoder.onFrameDecoded?(uiImage)
                         }

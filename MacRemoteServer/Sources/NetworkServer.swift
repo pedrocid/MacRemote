@@ -9,7 +9,7 @@ final class NetworkServer {
     private let queue = DispatchQueue(label: "com.macremote.server", qos: .userInteractive)
 
     var onClientConnected: (() -> Void)?
-    var onClientDisconnected: (() -> Void)?
+    var onClientDisconnected: ((NWConnection) -> Void)?
     var onMessageReceived: ((RemoteMessage, NWConnection) -> Void)?
     var onError: ((Error) -> Void)?
 
@@ -77,6 +77,10 @@ final class NetworkServer {
         connections.forEach { send(message, to: $0) }
     }
 
+    func sendToConnections(_ message: ServerMessage, matching predicate: (NWConnection) -> Bool) {
+        connections.filter(predicate).forEach { send(message, to: $0) }
+    }
+
     // MARK: - Connection Handling
 
     private func handleNewConnection(_ connection: NWConnection) {
@@ -113,7 +117,7 @@ final class NetworkServer {
     private func removeConnection(_ connection: NWConnection) {
         connections.removeAll { $0 === connection }
         DispatchQueue.main.async { [weak self] in
-            self?.onClientDisconnected?()
+            self?.onClientDisconnected?(connection)
         }
     }
 

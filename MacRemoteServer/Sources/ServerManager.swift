@@ -142,9 +142,11 @@ final class ServerManager: ObservableObject {
     private func setupScreenCaptureCallbacks() {
         screenCaptureManager.onFrameEncoded = { [weak self] frame in
             guard let self = self else { return }
-            // Send frame to all streaming clients
+            // Send frame only to clients that requested streaming
             Task { @MainActor in
-                self.server.broadcast(.screenFrame(frame: frame))
+                self.server.sendToConnections(.screenFrame(frame: frame)) { connection in
+                    self.streamingClients.contains(ObjectIdentifier(connection))
+                }
             }
         }
     }
@@ -160,8 +162,23 @@ final class ServerManager: ObservableObject {
             self?.server.broadcast(.connected(screenWidth: screenSize.width, screenHeight: screenSize.height))
         }
 
-        server.onClientDisconnected = { [weak self] in
-            self?.connectedClients = self?.server.connectedClientsCount ?? 0
+        server.onClientDisconnected = { [weak self] connection in
+            guard let self = self else { return }
+            self.connectedClients = self.server.connectedClientsCount
+
+            // Clean up streaming state for disconnected client
+            let clientId = ObjectIdentifier(connection)
+            if self.streamingClients.contains(clientId) {
+                self.streamingClients.remove(clientId)
+                print("[ServerManager] Removed disconnected client from streaming clients")
+
+                // If no more streaming clients, stop capture
+                if self.streamingClients.isEmpty && self.isScreenStreaming {
+                    Task {
+                        await self.stopScreenStreaming()
+                    }
+                }
+            }
         }
 
         server.onMessageReceived = { [weak self] message, connection in
