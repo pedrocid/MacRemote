@@ -10,10 +10,11 @@ struct RemoteControlView: View {
             // Tab selector
             Picker("Mode", selection: $selectedTab) {
                 Image(systemName: "hand.point.up.fill").tag(0)
-                Image(systemName: "speaker.wave.2.fill").tag(1)
-                Image(systemName: "keyboard").tag(2)
-                Image(systemName: "square.grid.2x2").tag(3)
-                Image(systemName: "gearshape.fill").tag(4)
+                Image(systemName: "display").tag(1)
+                Image(systemName: "speaker.wave.2.fill").tag(2)
+                Image(systemName: "keyboard").tag(3)
+                Image(systemName: "square.grid.2x2").tag(4)
+                Image(systemName: "gearshape.fill").tag(5)
             }
             .pickerStyle(.segmented)
             .padding(.horizontal)
@@ -22,13 +23,20 @@ struct RemoteControlView: View {
             // Content
             TabView(selection: $selectedTab) {
                 trackpadTab.tag(0)
-                mediaTab.tag(1)
-                keyboardTab.tag(2)
-                appsTab.tag(3)
-                systemTab.tag(4)
+                screenTab.tag(1)
+                mediaTab.tag(2)
+                keyboardTab.tag(3)
+                appsTab.tag(4)
+                systemTab.tag(5)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
         }
+    }
+
+    // MARK: - Screen Tab
+
+    private var screenTab: some View {
+        ScreenView(client: client)
     }
 
     // MARK: - Apps Tab
@@ -279,7 +287,7 @@ struct DirectKeyboardView: View {
         }
         .onChange(of: selectedTab) { _, newTab in
             // Hide keyboard when switching away from keyboard tab
-            if newTab != 2 {
+            if newTab != 3 {
                 isKeyboardActive = false
             }
         }

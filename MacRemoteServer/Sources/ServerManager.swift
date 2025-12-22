@@ -3,19 +3,27 @@ import AppKit
 import Network
 
 /// Main controller that coordinates the server, Bonjour, and input handling
+@MainActor
 final class ServerManager: ObservableObject {
 
     private let server = NetworkServer()
     private let advertiser = BonjourAdvertiser()
     private let inputController = InputController()
+    private let screenCaptureManager = ScreenCaptureManager()
+
+    // Track which clients are receiving screen stream
+    private var streamingClients = Set<ObjectIdentifier>()
 
     @Published var isRunning = false
     @Published var connectedClients = 0
     @Published var hasAccessibilityPermission = false
+    @Published var hasScreenRecordingPermission = false
+    @Published var isScreenStreaming = false
     @Published var lastError: String?
 
     init() {
         setupServerCallbacks()
+        setupScreenCaptureCallbacks()
         checkPermissions()
     }
 
@@ -44,6 +52,10 @@ final class ServerManager: ObservableObject {
     }
 
     func stop() {
+        // Stop screen streaming if active
+        Task {
+            await stopScreenStreaming()
+        }
         advertiser.stopAdvertising()
         server.stop()
         isRunning = false
@@ -62,11 +74,81 @@ final class ServerManager: ObservableObject {
 
     func checkPermissions() {
         hasAccessibilityPermission = InputController.checkAccessibilityPermission(prompt: false)
+        Task {
+            await screenCaptureManager.checkPermission()
+            hasScreenRecordingPermission = screenCaptureManager.hasScreenRecordingPermission
+        }
     }
 
     func requestAccessibilityPermission() {
         // Open System Preferences directly to Accessibility
         InputController.openAccessibilityPreferences()
+    }
+
+    func requestScreenRecordingPermission() {
+        // Open System Preferences to Screen Recording
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    // MARK: - Screen Streaming
+
+    private func startScreenStreaming(quality: RemoteMessage.StreamQuality, for connection: NWConnection) {
+        let clientId = ObjectIdentifier(connection)
+        streamingClients.insert(clientId)
+
+        // If not already streaming, start the capture
+        if !isScreenStreaming {
+            Task {
+                do {
+                    try await screenCaptureManager.startStreaming(quality: quality)
+                    isScreenStreaming = true
+                    server.send(.screenStreamStarted, to: connection)
+                    print("[ServerManager] Screen streaming started for client")
+                } catch {
+                    print("[ServerManager] Failed to start screen streaming: \(error)")
+                    server.send(.error(message: "Failed to start screen streaming: \(error.localizedDescription)"), to: connection)
+                    streamingClients.remove(clientId)
+                }
+            }
+        } else {
+            server.send(.screenStreamStarted, to: connection)
+        }
+    }
+
+    private func stopScreenStreamingForClient(_ connection: NWConnection) {
+        let clientId = ObjectIdentifier(connection)
+        streamingClients.remove(clientId)
+
+        // If no more clients need streaming, stop capture
+        if streamingClients.isEmpty {
+            Task {
+                await stopScreenStreaming()
+            }
+        }
+
+        server.send(.screenStreamStopped, to: connection)
+    }
+
+    private func stopScreenStreaming() async {
+        guard isScreenStreaming else { return }
+        await screenCaptureManager.stopStreaming()
+        isScreenStreaming = false
+        streamingClients.removeAll()
+        print("[ServerManager] Screen streaming stopped")
+    }
+
+    private func setupScreenCaptureCallbacks() {
+        screenCaptureManager.onFrameEncoded = { [weak self] frame in
+            guard let self = self else { return }
+            // Send frame only to clients that requested streaming
+            Task { @MainActor in
+                self.server.sendToConnections(.screenFrame(frame: frame)) { connection in
+                    self.streamingClients.contains(ObjectIdentifier(connection))
+                }
+            }
+        }
     }
 
     // MARK: - Private
@@ -80,8 +162,23 @@ final class ServerManager: ObservableObject {
             self?.server.broadcast(.connected(screenWidth: screenSize.width, screenHeight: screenSize.height))
         }
 
-        server.onClientDisconnected = { [weak self] in
-            self?.connectedClients = self?.server.connectedClientsCount ?? 0
+        server.onClientDisconnected = { [weak self] connection in
+            guard let self = self else { return }
+            self.connectedClients = self.server.connectedClientsCount
+
+            // Clean up streaming state for disconnected client
+            let clientId = ObjectIdentifier(connection)
+            if self.streamingClients.contains(clientId) {
+                self.streamingClients.remove(clientId)
+                print("[ServerManager] Removed disconnected client from streaming clients")
+
+                // If no more streaming clients, stop capture
+                if self.streamingClients.isEmpty && self.isScreenStreaming {
+                    Task {
+                        await self.stopScreenStreaming()
+                    }
+                }
+            }
         }
 
         server.onMessageReceived = { [weak self] message, connection in
@@ -139,6 +236,14 @@ final class ServerManager: ObservableObject {
             if !inputController.launchApp(bundleId: bundleId) {
                 server.send(.error(message: "Failed to launch app: \(bundleId)"), to: connection)
             }
+
+        case .startScreenStream(let quality):
+            print("[ServerManager] Screen stream requested with quality: \(quality)")
+            startScreenStreaming(quality: quality, for: connection)
+
+        case .stopScreenStream:
+            print("[ServerManager] Screen stream stop requested")
+            stopScreenStreamingForClient(connection)
         }
     }
 }

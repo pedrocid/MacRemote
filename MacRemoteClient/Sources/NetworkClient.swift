@@ -9,6 +9,10 @@ final class NetworkClient: ObservableObject {
     @Published var connectionError: String?
     @Published var apps: [AppInfo] = []
     @Published var isLoadingApps = false
+    @Published var isScreenStreaming = false
+
+    // Callback for received screen frames
+    var onScreenFrameReceived: ((ScreenFrame) -> Void)?
 
     private var connection: NWConnection?
     private let queue = DispatchQueue(label: "com.macremote.client", qos: .userInteractive)
@@ -146,6 +150,16 @@ final class NetworkClient: ObservableObject {
         send(.launchApp(bundleId: bundleId))
     }
 
+    // MARK: - Screen Streaming
+
+    func startScreenStream(quality: RemoteMessage.StreamQuality = .medium) {
+        send(.startScreenStream(quality: quality))
+    }
+
+    func stopScreenStream() {
+        send(.stopScreenStream)
+    }
+
     // MARK: - Receiving
 
     private func startReceiving() {
@@ -212,6 +226,17 @@ final class NetworkClient: ObservableObject {
             apps = appList
             isLoadingApps = false
             print("[Client] App list loaded successfully")
+
+        case .screenFrame(let frame):
+            onScreenFrameReceived?(frame)
+
+        case .screenStreamStarted:
+            isScreenStreaming = true
+            print("[Client] Screen streaming started")
+
+        case .screenStreamStopped:
+            isScreenStreaming = false
+            print("[Client] Screen streaming stopped")
         }
     }
 }
