@@ -31,6 +31,14 @@ enum RemoteMessage: Codable {
     case ping
     case requestAppList
     case launchApp(bundleId: String)
+    case startScreenStream(quality: StreamQuality)
+    case stopScreenStream
+
+    enum StreamQuality: String, Codable {
+        case low      // 480p, lower bitrate
+        case medium   // 720p, balanced
+        case high     // 1080p, higher bitrate
+    }
 
     enum MouseButton: String, Codable {
         case left
@@ -59,6 +67,18 @@ enum ServerMessage: Codable {
     case pong
     case error(message: String)
     case appList(apps: [AppInfo])
+    case screenFrame(frame: ScreenFrame)
+    case screenStreamStarted
+    case screenStreamStopped
+}
+
+/// Encoded video frame for screen streaming
+struct ScreenFrame: Codable {
+    let data: Data           // H.264 NAL unit data
+    let width: Int
+    let height: Int
+    let timestamp: UInt64    // Presentation timestamp in milliseconds
+    let isKeyFrame: Bool     // Whether this is an I-frame (needed for decoder reset)
 }
 
 /// Protocol message wrapper with length prefix for TCP framing
