@@ -150,7 +150,7 @@ struct RemoteControlView: View {
     // MARK: - Keyboard Tab
 
     private var keyboardTab: some View {
-        DirectKeyboardView(client: client)
+        DirectKeyboardView(client: client, selectedTab: $selectedTab)
     }
 
     // MARK: - System Tab
@@ -188,6 +188,7 @@ struct MediaButton: View {
 
 struct DirectKeyboardView: View {
     @ObservedObject var client: NetworkClient
+    @Binding var selectedTab: Int
     @FocusState private var isKeyboardActive: Bool
     @State private var inputText = ""
 
@@ -276,17 +277,24 @@ struct DirectKeyboardView: View {
                 isKeyboardActive = true
             }
         }
+        .onChange(of: selectedTab) { _, newTab in
+            // Hide keyboard when switching away from keyboard tab
+            if newTab != 2 {
+                isKeyboardActive = false
+            }
+        }
     }
 
     private func handleTextChange(from oldValue: String, to newValue: String) {
+        // Ignore when we programmatically clear the field
+        if newValue.isEmpty {
+            return
+        }
         if newValue.count > oldValue.count {
             // Character added
             if let char = newValue.last {
                 sendCharacter(char)
             }
-        } else if newValue.count < oldValue.count {
-            // Character deleted - send delete key
-            client.keyPress(code: KeyCodes.delete)
         }
         // Clear the text field to keep it ready for next input
         inputText = ""
