@@ -200,13 +200,17 @@ final class ScreenCaptureManager: NSObject, ObservableObject {
             presentationTimeStamp: presentationTime,
             duration: duration,
             frameProperties: properties as CFDictionary?,
-            infoFlagsOut: &infoFlags
-        ) { [weak self] status, infoFlags, sampleBuffer in
-            guard status == noErr, let sampleBuffer = sampleBuffer else {
-                return
+            infoFlagsOut: &infoFlags,
+            outputHandler: { [weak self] status, infoFlags, sampleBuffer in
+                guard status == noErr, let sampleBuffer = sampleBuffer else {
+                    if status != noErr {
+                        print("[ScreenCapture] Encode callback error: \(status)")
+                    }
+                    return
+                }
+                self?.handleEncodedFrame(sampleBuffer)
             }
-            self?.handleEncodedFrame(sampleBuffer)
-        }
+        )
 
         if encodeStatus != noErr {
             print("[ScreenCapture] Encode error: \(encodeStatus)")
@@ -220,18 +224,7 @@ final class ScreenCaptureManager: NSObject, ObservableObject {
             return
         }
 
-        // Get frame data
-        var length: Int = 0
-        var dataPointer: UnsafeMutablePointer<Int8>?
-        CMBlockBufferGetDataPointer(dataBuffer, atOffset: 0, lengthAtOffsetOut: nil, totalLengthOut: &length, dataPointerOut: &dataPointer)
-
-        guard let pointer = dataPointer, length > 0 else {
-            return
-        }
-
-        let data = Data(bytes: pointer, count: length)
-
-        // Get format description for dimensions
+        // Get format description for dimensions and SPS/PPS
         guard let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
             return
         }
@@ -242,11 +235,87 @@ final class ScreenCaptureManager: NSObject, ObservableObject {
         let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[CFString: Any]]
         let isKeyFrame = attachments?.first?[kCMSampleAttachmentKey_NotSync] == nil
 
+        // Get frame data
+        var length: Int = 0
+        var dataPointer: UnsafeMutablePointer<Int8>?
+        CMBlockBufferGetDataPointer(dataBuffer, atOffset: 0, lengthAtOffsetOut: nil, totalLengthOut: &length, dataPointerOut: &dataPointer)
+
+        guard let pointer = dataPointer, length > 0 else {
+            return
+        }
+
+        var frameData = Data()
+
+        // For keyframes, prepend SPS and PPS in Annex B format
+        if isKeyFrame {
+            // Extract SPS
+            var spsSize: Int = 0
+            var spsCount: Int = 0
+            var spsPointer: UnsafePointer<UInt8>?
+
+            var status = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
+                formatDescription,
+                parameterSetIndex: 0,
+                parameterSetPointerOut: &spsPointer,
+                parameterSetSizeOut: &spsSize,
+                parameterSetCountOut: &spsCount,
+                nalUnitHeaderLengthOut: nil
+            )
+
+            if status == noErr, let sps = spsPointer {
+                // Annex B start code
+                frameData.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+                frameData.append(Data(bytes: sps, count: spsSize))
+            }
+
+            // Extract PPS
+            var ppsSize: Int = 0
+            var ppsPointer: UnsafePointer<UInt8>?
+
+            status = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
+                formatDescription,
+                parameterSetIndex: 1,
+                parameterSetPointerOut: &ppsPointer,
+                parameterSetSizeOut: &ppsSize,
+                parameterSetCountOut: nil,
+                nalUnitHeaderLengthOut: nil
+            )
+
+            if status == noErr, let pps = ppsPointer {
+                // Annex B start code
+                frameData.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+                frameData.append(Data(bytes: pps, count: ppsSize))
+            }
+        }
+
+        // Convert AVCC NAL units to Annex B format
+        let avccData = Data(bytes: pointer, count: length)
+        var offset = 0
+        while offset < avccData.count - 4 {
+            // Read 4-byte NAL unit length (big-endian)
+            let nalLength = Int(avccData[offset]) << 24 |
+                           Int(avccData[offset + 1]) << 16 |
+                           Int(avccData[offset + 2]) << 8 |
+                           Int(avccData[offset + 3])
+
+            offset += 4
+
+            if nalLength > 0 && offset + nalLength <= avccData.count {
+                // Annex B start code
+                frameData.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+                // NAL unit data
+                frameData.append(avccData[offset..<offset + nalLength])
+                offset += nalLength
+            } else {
+                break
+            }
+        }
+
         // Calculate timestamp in milliseconds
         let timestamp = UInt64(CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)) * 1000)
 
         let frame = ScreenFrame(
-            data: data,
+            data: frameData,
             width: Int(dimensions.width),
             height: Int(dimensions.height),
             timestamp: timestamp,
