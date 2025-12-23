@@ -5,14 +5,17 @@ Control your Mac from your iPhone. Trackpad, keyboard, and media controls over y
 ## Features
 
 - **Trackpad**: Move cursor, tap to click, double-tap, right-click, scroll
-- **Media Controls**: Play/pause, next/previous track, volume up/down/mute
+- **Screen Sharing**: View your Mac's screen on your iPhone with H.264 streaming (low/medium/high quality)
+- **Media Controls**: Play/pause, next/previous track, volume up/down/mute, brightness up/down
 - **Keyboard**: Native iOS keyboard input, quick shortcuts (⌘C, ⌘V, ⌘Z), arrow keys, function keys
+- **App Launcher**: Browse and launch Mac apps remotely, with favorites support
+- **System Controls**: Lock screen remotely
 
 ## Screenshots
 
-| Trackpad | Media | Keyboard |
-|----------|-------|----------|
-| Touch to move cursor, tap to click | Volume and playback controls | Native keyboard + shortcuts |
+| Trackpad | Screen | Media | Keyboard | Apps | System |
+|----------|--------|-------|----------|------|--------|
+| Touch to move cursor, tap to click | View Mac screen remotely | Volume, playback, and brightness | Native keyboard + shortcuts | Launch Mac apps | Lock screen |
 
 ## Requirements
 
@@ -54,10 +57,13 @@ open MacRemote.xcworkspace
 ┌─────────────────┐         WiFi/TCP         ┌─────────────────┐
 │   iOS Client    │◄───────────────────────►│   macOS Server  │
 │                 │      JSON messages       │   (Menubar)     │
-│                 │                          │                 │
+│                 │      + H.264 stream      │                 │
 │ • Trackpad UI   │                          │ • CGEvent API   │
+│ • Screen View   │                          │ • ScreenCapture │
 │ • Media buttons │                          │ • Bonjour       │
 │ • Keyboard      │                          │ • TCP Server    │
+│ • App Launcher  │                          │ • App List      │
+│ • System Ctrl   │                          │                 │
 └─────────────────┘                          └─────────────────┘
 ```
 
@@ -70,9 +76,15 @@ Communication uses JSON messages over TCP with length-prefix framing:
 enum RemoteMessage {
     case move(dx: Double, dy: Double)
     case click(button: MouseButton)
+    case doubleClick(button: MouseButton)
     case scroll(dx: Double, dy: Double)
     case key(code: UInt16, down: Bool, flags: UInt64)
-    case media(action: MediaAction)  // playPause, volumeUp, etc.
+    case media(action: MediaAction)      // playPause, volumeUp, brightnessUp, etc.
+    case system(action: SystemAction)    // lock
+    case requestAppList
+    case launchApp(bundleId: String)
+    case startScreenStream(quality: StreamQuality)
+    case stopScreenStream
 }
 
 // Server → Client
@@ -80,6 +92,10 @@ enum ServerMessage {
     case connected(screenWidth: Double, screenHeight: Double)
     case pong
     case error(message: String)
+    case appList(apps: [AppInfo])
+    case screenFrame(frame: ScreenFrame)  // H.264 encoded frame
+    case screenStreamStarted
+    case screenStreamStopped
 }
 ```
 
@@ -99,13 +115,19 @@ MacRemote/
 │       ├── ServerManager.swift
 │       ├── NetworkServer.swift
 │       ├── BonjourAdvertiser.swift
-│       └── InputController.swift
+│       ├── InputController.swift
+│       └── ScreenCaptureManager.swift
 └── MacRemoteClient/             # iOS app
     ├── Project.swift
     └── Sources/
         ├── MacRemoteClientApp.swift
+        ├── ConnectionView.swift
         ├── RemoteControlView.swift
         ├── TrackpadView.swift
+        ├── ScreenView.swift
+        ├── AppsView.swift
+        ├── KeyboardView.swift
+        ├── VideoDecoder.swift
         ├── NetworkClient.swift
         └── BonjourBrowser.swift
 ```
@@ -117,6 +139,7 @@ MacRemote/
 | Permission | Purpose |
 |------------|---------|
 | Accessibility | Control mouse and keyboard |
+| Screen Recording | Screen sharing feature |
 | Local Network | Bonjour discovery and TCP server |
 
 ### iOS (Client)
@@ -146,7 +169,8 @@ MacRemote/
 
 ## Roadmap
 
-- [ ] Screen sharing (view Mac desktop on iOS) - [#1](https://github.com/pedrocid/MacRemote/issues/1)
+- [x] Screen sharing (view Mac desktop on iOS) - [#1](https://github.com/pedrocid/MacRemote/issues/1)
+- [x] App launcher
 - [ ] Multi-touch gestures
 - [ ] Custom shortcuts
 - [ ] Widget for iOS
@@ -158,6 +182,7 @@ MIT
 ## Acknowledgments
 
 Built with:
-- [ScreenCaptureKit](https://developer.apple.com/documentation/screencapturekit/) (planned)
+- [ScreenCaptureKit](https://developer.apple.com/documentation/screencapturekit/)
+- [VideoToolbox](https://developer.apple.com/documentation/videotoolbox) (H.264 encoding/decoding)
 - [Network.framework](https://developer.apple.com/documentation/network)
 - [Bonjour](https://developer.apple.com/bonjour/)
