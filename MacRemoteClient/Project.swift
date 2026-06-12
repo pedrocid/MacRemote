@@ -24,7 +24,9 @@ let project = Project(
                     "UIInterfaceOrientationLandscapeRight"
                 ]),
                 "NSBonjourServices": .array(["_macremote._tcp"]),
-                "NSLocalNetworkUsageDescription": "MacRemote needs access to the local network to find and connect to your Mac"
+                "NSLocalNetworkUsageDescription": "MacRemote needs access to the local network to find and connect to your Mac",
+                "NSFaceIDUsageDescription": "Use Face ID to authorize unlocking your paired Mac",
+                "ITSAppUsesNonExemptEncryption": false
             ]),
             sources: [
                 "Sources/**",
@@ -37,7 +39,9 @@ let project = Project(
                 base: [
                     "SWIFT_VERSION": "5.9",
                     "CODE_SIGN_STYLE": "Automatic",
-                    "DEVELOPMENT_TEAM": "746CH7LGJ5"
+                    "DEVELOPMENT_TEAM": "746CH7LGJ5",
+                    "MARKETING_VERSION": "1.0",
+                    "CURRENT_PROJECT_VERSION": "1"
                 ]
             )
         )

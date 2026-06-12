@@ -8,7 +8,7 @@ final class NetworkServer {
     private var connections: [NWConnection] = []
     private let queue = DispatchQueue(label: "com.macremote.server", qos: .userInteractive)
 
-    var onClientConnected: (() -> Void)?
+    var onClientConnected: ((NWConnection) -> Void)?
     var onClientDisconnected: ((NWConnection) -> Void)?
     var onMessageReceived: ((RemoteMessage, NWConnection) -> Void)?
     var onError: ((Error) -> Void)?
@@ -94,7 +94,7 @@ final class NetworkServer {
             case .ready:
                 print("[Server] Client connected: \(connection.endpoint)")
                 DispatchQueue.main.async {
-                    self?.onClientConnected?()
+                    self?.onClientConnected?(connection)
                 }
                 self?.receiveMessage(from: connection)
 

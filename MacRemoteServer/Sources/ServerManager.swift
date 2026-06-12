@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import CryptoKit
 import Network
 
 /// Main controller that coordinates the server, Bonjour, and input handling
@@ -10,9 +11,11 @@ final class ServerManager: ObservableObject {
     private let advertiser = BonjourAdvertiser()
     private let inputController = InputController()
     private let screenCaptureManager = ScreenCaptureManager()
+    private let remoteUnlockStore = RemoteUnlockStore()
 
     // Track which clients are receiving screen stream
     private var streamingClients = Set<ObjectIdentifier>()
+    private var unlockChallenges: [ObjectIdentifier: Data] = [:]
 
     @Published var isRunning = false
     @Published var connectedClients = 0
@@ -20,11 +23,33 @@ final class ServerManager: ObservableObject {
     @Published var hasScreenRecordingPermission = false
     @Published var isScreenStreaming = false
     @Published var lastError: String?
+    @Published private(set) var isRemoteUnlockConfigured = false
+    @Published private(set) var pairingKey: String?
 
     init() {
+        refreshRemoteUnlockConfiguration()
         setupServerCallbacks()
         setupScreenCaptureCallbacks()
         checkPermissions()
+    }
+
+    // MARK: - Remote Unlock
+
+    @discardableResult
+    func configureRemoteUnlock(password: String) -> Bool {
+        let configured = remoteUnlockStore.configure(password: password)
+        refreshRemoteUnlockConfiguration()
+        return configured
+    }
+
+    func disableRemoteUnlock() {
+        remoteUnlockStore.removeConfiguration()
+        refreshRemoteUnlockConfiguration()
+    }
+
+    private func refreshRemoteUnlockConfiguration() {
+        isRemoteUnlockConfigured = remoteUnlockStore.isConfigured
+        pairingKey = remoteUnlockStore.formattedPairingKey
     }
 
     // MARK: - Server Control
@@ -154,12 +179,22 @@ final class ServerManager: ObservableObject {
     // MARK: - Private
 
     private func setupServerCallbacks() {
-        server.onClientConnected = { [weak self] in
-            self?.connectedClients = self?.server.connectedClientsCount ?? 0
+        server.onClientConnected = { [weak self] connection in
+            guard let self = self else { return }
+            self.connectedClients = self.server.connectedClientsCount
 
-            // Send screen info to new client
-            let screenSize = self?.inputController.screenSize ?? CGSize(width: 1920, height: 1080)
-            self?.server.broadcast(.connected(screenWidth: screenSize.width, screenHeight: screenSize.height))
+            let challenge = RemoteUnlockStore.randomBytes(count: 32)
+            self.unlockChallenges[ObjectIdentifier(connection)] = challenge
+            let screenSize = self.inputController.screenSize
+            self.server.send(
+                .connected(
+                    screenWidth: screenSize.width,
+                    screenHeight: screenSize.height,
+                    unlockChallenge: self.isRemoteUnlockConfigured ? challenge : nil,
+                    unlockAvailable: self.isRemoteUnlockConfigured
+                ),
+                to: connection
+            )
         }
 
         server.onClientDisconnected = { [weak self] connection in
@@ -168,6 +203,7 @@ final class ServerManager: ObservableObject {
 
             // Clean up streaming state for disconnected client
             let clientId = ObjectIdentifier(connection)
+            self.unlockChallenges.removeValue(forKey: clientId)
             if self.streamingClients.contains(clientId) {
                 self.streamingClients.remove(clientId)
                 print("[ServerManager] Removed disconnected client from streaming clients")
@@ -244,6 +280,53 @@ final class ServerManager: ObservableObject {
         case .stopScreenStream:
             print("[ServerManager] Screen stream stop requested")
             stopScreenStreamingForClient(connection)
+
+        case .unlock(let signature):
+            handleUnlock(signature: signature, from: connection)
         }
+    }
+
+    private func handleUnlock(signature: Data, from connection: NWConnection) {
+        let clientId = ObjectIdentifier(connection)
+        guard let token = remoteUnlockStore.token,
+              let password = remoteUnlockStore.password,
+              let challenge = unlockChallenges[clientId] else {
+            server.send(.unlockResult(success: false, message: "Remote unlock is not configured on this Mac."), to: connection)
+            return
+        }
+
+        let expected = Data(HMAC<SHA256>.authenticationCode(
+            for: challenge + Data("unlock".utf8),
+            using: SymmetricKey(data: token)
+        ))
+        let nextChallenge = RemoteUnlockStore.randomBytes(count: 32)
+        unlockChallenges[clientId] = nextChallenge
+
+        guard signature.constantTimeEquals(expected) else {
+            server.send(.unlockResult(success: false, message: "The pairing key is invalid."), to: connection)
+            server.send(.unlockChallenge(nextChallenge), to: connection)
+            return
+        }
+
+        let posted = inputController.unlockScreen(password: password)
+        server.send(
+            .unlockResult(
+                success: posted,
+                message: posted
+                    ? "Unlock command sent to the Mac."
+                    : "The Mac could not post unlock events."
+            ),
+            to: connection
+        )
+        server.send(.unlockChallenge(nextChallenge), to: connection)
+    }
+}
+
+private extension Data {
+    func constantTimeEquals(_ other: Data) -> Bool {
+        guard count == other.count else { return false }
+        return zip(self, other).reduce(UInt8(0)) { result, pair in
+            result | (pair.0 ^ pair.1)
+        } == 0
     }
 }

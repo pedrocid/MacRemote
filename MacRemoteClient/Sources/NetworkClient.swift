@@ -1,4 +1,6 @@
 import Foundation
+import CryptoKit
+import LocalAuthentication
 import Network
 
 /// TCP Client that connects to a MacRemote server
@@ -10,12 +12,22 @@ final class NetworkClient: ObservableObject {
     @Published var apps: [AppInfo] = []
     @Published var isLoadingApps = false
     @Published var isScreenStreaming = false
+    @Published private(set) var isUnlockAvailable = false
+    @Published private(set) var hasUnlockPairingKey = false
+    @Published var unlockStatus: String?
+    @Published var isAuthenticatingForUnlock = false
 
     // Callback for received screen frames
     var onScreenFrameReceived: ((ScreenFrame) -> Void)?
 
     private var connection: NWConnection?
     private let queue = DispatchQueue(label: "com.macremote.client", qos: .userInteractive)
+    private let unlockCredentialStore = UnlockCredentialStore()
+    private var unlockChallenge: Data?
+
+    init() {
+        hasUnlockPairingKey = unlockCredentialStore.hasToken
+    }
 
     // MARK: - Connection
 
@@ -137,6 +149,54 @@ final class NetworkClient: ObservableObject {
         send(.system(action: .lock))
     }
 
+    @discardableResult
+    func saveUnlockPairingKey(_ pairingKey: String) -> Bool {
+        let saved = unlockCredentialStore.save(pairingKey: pairingKey)
+        hasUnlockPairingKey = unlockCredentialStore.hasToken
+        unlockStatus = saved ? nil : String(localized: "unlock_invalid_pairing_key")
+        return saved
+    }
+
+    func removeUnlockPairingKey() {
+        unlockCredentialStore.delete()
+        hasUnlockPairingKey = false
+        unlockStatus = nil
+    }
+
+    func requestUnlock() {
+        guard isUnlockAvailable, let challenge = unlockChallenge else {
+            unlockStatus = String(localized: "unlock_not_available")
+            return
+        }
+        guard let token = unlockCredentialStore.token else {
+            unlockStatus = String(localized: "unlock_pair_first")
+            return
+        }
+
+        let context = LAContext()
+        context.localizedCancelTitle = String(localized: "cancel")
+        isAuthenticatingForUnlock = true
+        context.evaluatePolicy(
+            .deviceOwnerAuthentication,
+            localizedReason: String(localized: "unlock_auth_reason")
+        ) { [weak self] success, error in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.isAuthenticatingForUnlock = false
+                guard success else {
+                    self.unlockStatus = error?.localizedDescription ?? String(localized: "unlock_auth_failed")
+                    return
+                }
+                let signature = Data(HMAC<SHA256>.authenticationCode(
+                    for: challenge + Data("unlock".utf8),
+                    using: SymmetricKey(data: token)
+                ))
+                self.unlockStatus = String(localized: "unlock_sending")
+                self.send(.unlock(signature: signature))
+            }
+        }
+    }
+
     // MARK: - App Launcher
 
     func requestAppList() {
@@ -211,8 +271,10 @@ final class NetworkClient: ObservableObject {
 
     private func handleMessage(_ message: ServerMessage) {
         switch message {
-        case .connected(let width, let height):
+        case .connected(let width, let height, let challenge, let unlockAvailable):
             screenSize = CGSize(width: width, height: height)
+            unlockChallenge = challenge
+            isUnlockAvailable = unlockAvailable
             print("[Client] Screen size: \(screenSize)")
 
         case .pong:
@@ -237,6 +299,12 @@ final class NetworkClient: ObservableObject {
         case .screenStreamStopped:
             isScreenStreaming = false
             print("[Client] Screen streaming stopped")
+
+        case .unlockResult(let success, let message):
+            unlockStatus = success ? String(localized: "unlock_command_sent") : message
+
+        case .unlockChallenge(let challenge):
+            unlockChallenge = challenge
         }
     }
 }

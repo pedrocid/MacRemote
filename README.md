@@ -9,13 +9,14 @@ Control your Mac from your iPhone. Trackpad, keyboard, and media controls over y
 - **Media Controls**: Play/pause, next/previous track, volume up/down/mute, brightness up/down
 - **Keyboard**: Native iOS keyboard input, quick shortcuts (⌘C, ⌘V, ⌘Z), arrow keys, function keys
 - **App Launcher**: Browse and launch Mac apps remotely, with favorites support
-- **System Controls**: Lock screen remotely
+- **System Controls**: Lock and unlock the screen remotely
+- **Protected Unlock**: The Mac password stays in the Mac Keychain; iOS requires device-owner authentication and a pairing key
 
 ## Screenshots
 
 | Trackpad | Screen | Media | Keyboard | Apps | System |
 |----------|--------|-------|----------|------|--------|
-| Touch to move cursor, tap to click | View Mac screen remotely | Volume, playback, and brightness | Native keyboard + shortcuts | Launch Mac apps | Lock screen |
+| Touch to move cursor, tap to click | View Mac screen remotely | Volume, playback, and brightness | Native keyboard + shortcuts | Launch Mac apps | Lock and unlock |
 
 ## Requirements
 
@@ -44,6 +45,16 @@ open MacRemote.xcworkspace
 1. Build and run `MacRemoteServer` scheme
 2. Grant **Accessibility** permission when prompted (System Settings → Privacy & Security → Accessibility)
 3. Click "Start Server" in the menubar app
+
+### Remote Unlock Setup
+
+1. Open the MacRemote Server menu bar window.
+2. Enter the Mac login password under **Remote Unlock** and enable it.
+3. Copy the generated pairing key.
+4. Connect from iOS, open the System tab, and save that pairing key.
+5. Tap **Unlock Mac** and authenticate with Face ID, Touch ID, or the iPhone passcode.
+
+The Mac password remains in the Mac Keychain. The iOS app stores only the pairing token and sends a one-time HMAC response for each unlock request.
 
 ### iOS Client
 
@@ -81,6 +92,7 @@ enum RemoteMessage {
     case key(code: UInt16, down: Bool, flags: UInt64)
     case media(action: MediaAction)      // playPause, volumeUp, brightnessUp, etc.
     case system(action: SystemAction)    // lock
+    case unlock(signature: Data)         // one-time HMAC response
     case requestAppList
     case launchApp(bundleId: String)
     case startScreenStream(quality: StreamQuality)

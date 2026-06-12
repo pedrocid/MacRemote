@@ -33,6 +33,7 @@ enum RemoteMessage: Codable {
     case launchApp(bundleId: String)
     case startScreenStream(quality: StreamQuality)
     case stopScreenStream
+    case unlock(signature: Data)
 
     enum StreamQuality: String, Codable {
         case low      // 480p, lower bitrate
@@ -63,13 +64,15 @@ enum RemoteMessage: Codable {
 
 /// Messages sent from macOS server to iOS client
 enum ServerMessage: Codable {
-    case connected(screenWidth: Double, screenHeight: Double)
+    case connected(screenWidth: Double, screenHeight: Double, unlockChallenge: Data?, unlockAvailable: Bool)
     case pong
     case error(message: String)
     case appList(apps: [AppInfo])
     case screenFrame(frame: ScreenFrame)
     case screenStreamStarted
     case screenStreamStopped
+    case unlockResult(success: Bool, message: String)
+    case unlockChallenge(Data)
 }
 
 /// Encoded video frame for screen streaming

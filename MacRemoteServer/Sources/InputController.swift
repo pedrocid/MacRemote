@@ -199,6 +199,41 @@ final class InputController {
         print("[InputController] Lock screen command executed (Ctrl+Cmd+Q)")
     }
 
+    /// Posts HID-level events so they can reach the macOS login window.
+    /// The caller keeps the password in the Keychain and never sends it over the network.
+    func unlockScreen(password: String) -> Bool {
+        guard !password.isEmpty else { return false }
+        let source = CGEventSource(stateID: .hidSystemState)
+
+        // Wake the display and reveal the password field. This first key is intentionally
+        // consumed by loginwindow when the display is asleep.
+        guard let wakeDown = CGEvent(keyboardEventSource: source, virtualKey: 49, keyDown: true),
+              let wakeUp = CGEvent(keyboardEventSource: source, virtualKey: 49, keyDown: false) else {
+            return false
+        }
+        wakeDown.post(tap: .cghidEventTap)
+        wakeUp.post(tap: .cghidEventTap)
+        usleep(700_000)
+
+        guard let passwordDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true),
+              let passwordUp = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false),
+              let returnDown = CGEvent(keyboardEventSource: source, virtualKey: 36, keyDown: true),
+              let returnUp = CGEvent(keyboardEventSource: source, virtualKey: 36, keyDown: false) else {
+            return false
+        }
+
+        var utf16 = Array(password.utf16)
+        passwordDown.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: &utf16)
+        passwordUp.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: &utf16)
+        passwordDown.post(tap: .cghidEventTap)
+        passwordUp.post(tap: .cghidEventTap)
+        usleep(100_000)
+        returnDown.post(tap: .cghidEventTap)
+        returnUp.post(tap: .cghidEventTap)
+        print("[InputController] Remote unlock events posted")
+        return true
+    }
+
     // MARK: - Screen Info
 
     var screenSize: CGSize {

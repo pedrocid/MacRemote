@@ -346,41 +346,91 @@ struct QuickActionButton: View {
 struct SystemView: View {
     @ObservedObject var client: NetworkClient
     @State private var showingLockConfirmation = false
+    @State private var pairingKey = ""
+    @State private var pairingKeyError = false
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            // Lock Screen Button
-            Button {
-                showingLockConfirmation = true
-            } label: {
+        ScrollView {
+            VStack(spacing: 24) {
                 VStack(spacing: 12) {
-                    Image(systemName: "lock.fill")
+                    Image(systemName: "lock.open.fill")
                         .font(.system(size: 48))
-                    Text(String(localized: "lock_screen"))
+                        .foregroundStyle(client.isUnlockAvailable ? .green : .secondary)
+                    Text(String(localized: "unlock_mac"))
                         .font(.headline)
-                }
-                .frame(width: 140, height: 140)
-                .background(Color(.systemGray5))
-                .cornerRadius(20)
-            }
-            .buttonStyle(.plain)
-            .confirmationDialog(
-                String(localized: "lock_screen_confirmation_title"),
-                isPresented: $showingLockConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button(String(localized: "lock_screen_confirm"), role: .destructive) {
-                    client.lockScreen()
-                }
-                Button(String(localized: "cancel"), role: .cancel) {}
-            } message: {
-                Text(String(localized: "lock_screen_confirmation_message"))
-            }
 
-            Spacer()
+                    if client.hasUnlockPairingKey {
+                        Button {
+                            client.requestUnlock()
+                        } label: {
+                            Label(
+                                client.isAuthenticatingForUnlock
+                                    ? String(localized: "unlock_authenticating")
+                                    : String(localized: "unlock_mac"),
+                                systemImage: "faceid"
+                            )
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!client.isUnlockAvailable || client.isAuthenticatingForUnlock)
+
+                        Button(String(localized: "unlock_forget_pairing"), role: .destructive) {
+                            client.removeUnlockPairingKey()
+                        }
+                        .font(.caption)
+                    } else {
+                        TextField(String(localized: "unlock_pairing_key"), text: $pairingKey)
+                            .textInputAutocapitalization(.characters)
+                            .autocorrectionDisabled()
+                            .textFieldStyle(.roundedBorder)
+
+                        Button(String(localized: "unlock_save_pairing")) {
+                            pairingKeyError = !client.saveUnlockPairingKey(pairingKey)
+                            if !pairingKeyError {
+                                pairingKey = ""
+                            }
+                        }
+                        .buttonStyle(.bordered)
+
+                        if pairingKeyError {
+                            Text(String(localized: "unlock_invalid_pairing_key"))
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+                    }
+
+                    if let status = client.unlockStatus {
+                        Text(status)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color(.systemGray6))
+                .cornerRadius(20)
+
+                Button {
+                    showingLockConfirmation = true
+                } label: {
+                    Label(String(localized: "lock_screen"), systemImage: "lock.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .confirmationDialog(
+                    String(localized: "lock_screen_confirmation_title"),
+                    isPresented: $showingLockConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button(String(localized: "lock_screen_confirm"), role: .destructive) {
+                        client.lockScreen()
+                    }
+                    Button(String(localized: "cancel"), role: .cancel) {}
+                } message: {
+                    Text(String(localized: "lock_screen_confirmation_message"))
+                }
+            }
+            .padding()
         }
-        .padding()
     }
 }

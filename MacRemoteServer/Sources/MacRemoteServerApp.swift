@@ -16,6 +16,8 @@ struct MacRemoteServerApp: App {
 
 struct MenuBarView: View {
     @ObservedObject var serverManager: ServerManager
+    @State private var unlockPassword = ""
+    @State private var unlockConfigurationError: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -85,6 +87,64 @@ struct MenuBarView: View {
 
             Divider()
 
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Remote Unlock", systemImage: "lock.open.fill")
+                    .font(.headline)
+
+                if serverManager.isRemoteUnlockConfigured {
+                    Text("Enabled. The Mac password is stored only in this Mac's Keychain.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    if let pairingKey = serverManager.pairingKey {
+                        Text("Pairing key")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(pairingKey)
+                            .font(.system(.caption2, design: .monospaced))
+                            .textSelection(.enabled)
+
+                        Button("Copy Pairing Key") {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(pairingKey, forType: .string)
+                        }
+                        .controlSize(.small)
+                    }
+
+                    Button("Disable Remote Unlock", role: .destructive) {
+                        serverManager.disableRemoteUnlock()
+                        unlockPassword = ""
+                    }
+                    .controlSize(.small)
+                } else {
+                    SecureField("Mac login password", text: $unlockPassword)
+                        .textFieldStyle(.roundedBorder)
+
+                    Text("The password never leaves this Mac. Pairing and device authentication are required.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    Button("Enable Remote Unlock") {
+                        if serverManager.configureRemoteUnlock(password: unlockPassword) {
+                            unlockPassword = ""
+                            unlockConfigurationError = nil
+                        } else {
+                            unlockConfigurationError = "Enter your Mac login password."
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+
+                if let unlockConfigurationError {
+                    Text(unlockConfigurationError)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            }
+
+            Divider()
+
             // Controls
             Button(serverManager.isRunning ? "Stop Server" : "Start Server") {
                 serverManager.toggle()
@@ -103,6 +163,6 @@ struct MenuBarView: View {
             .frame(maxWidth: .infinity, alignment: .center)
         }
         .padding()
-        .frame(width: 240)
+        .frame(width: 320)
     }
 }
