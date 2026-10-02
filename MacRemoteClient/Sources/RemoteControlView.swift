@@ -348,6 +348,18 @@ struct SystemView: View {
     @State private var showingLockConfirmation = false
     @State private var pairingKey = ""
     @State private var pairingKeyError = false
+    @AppStorage(UnlockSettings.requireFaceIDForShortcutKey) private var requireFaceIDForShortcut = true
+
+    private var shortcutTargetCaption: Text {
+        switch client.pairingState {
+        case .paired(let target):
+            return Text(String(format: String(localized: "unlock_shortcut_target"), target.displayName))
+        case .tokenOnlyLegacy:
+            return Text(String(localized: "unlock_shortcut_legacy"))
+        case .unpaired:
+            return Text(String(localized: "unlock_shortcut_no_target"))
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -374,6 +386,13 @@ struct SystemView: View {
                         .buttonStyle(.borderedProminent)
                         .disabled(!client.isUnlockAvailable || client.isAuthenticatingForUnlock)
 
+                        shortcutTargetCaption
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        Toggle(String(localized: "unlock_shortcut_require_faceid"), isOn: $requireFaceIDForShortcut)
+                            .font(.caption)
+
                         Button(String(localized: "unlock_forget_pairing"), role: .destructive) {
                             client.removeUnlockPairingKey()
                         }
@@ -392,11 +411,12 @@ struct SystemView: View {
                         }
                         .buttonStyle(.bordered)
 
-                        if pairingKeyError {
-                            Text(String(localized: "unlock_invalid_pairing_key"))
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                        }
+                    }
+
+                    if !client.hasUnlockPairingKey {
+                        shortcutTargetCaption
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
 
                     if let status = client.unlockStatus {

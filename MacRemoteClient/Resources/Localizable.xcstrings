@@ -11,6 +11,132 @@
         }
       }
     },
+    "Bright +" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brillo +"
+          }
+        }
+      }
+    },
+    "Bright -" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brillo -"
+          }
+        }
+      }
+    },
+    "Make sure MacRemote Server is running on your Mac" : {},
+    "Mute" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silencio"
+          }
+        }
+      }
+    },
+    "Next" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente"
+          }
+        }
+      }
+    },
+    "Not Connected" : {},
+    "Play/Pause" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reproducir/Pausar"
+          }
+        }
+      }
+    },
+    "Previous" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anterior"
+          }
+        }
+      }
+    },
+    "Right" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Derecho"
+          }
+        }
+      }
+    },
+    "Scroll" : {},
+    "Searching for Macs..." : {},
+    "Tap to activate keyboard" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para activar el teclado"
+          }
+        }
+      }
+    },
+    "Tap to connect" : {},
+    "Touch to move cursor" : {},
+    "Type on the keyboard below" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe en el teclado de abajo"
+          }
+        }
+      }
+    },
+    "Vol +" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vol +"
+          }
+        }
+      }
+    },
+    "Vol -" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vol -"
+          }
+        }
+      }
+    },
     "apps_add_favorite" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -164,28 +290,6 @@
         }
       }
     },
-    "Bright -" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Brillo -"
-          }
-        }
-      }
-    },
-    "Bright +" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Brillo +"
-          }
-        }
-      }
-    },
     "cancel" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -199,6 +303,241 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancelar"
+          }
+        }
+      }
+    },
+    "intent_unlock_mac_description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlocks your paired Mac after Face ID."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquea el Mac emparejado tras autenticarte con Face ID."
+          }
+        }
+      }
+    },
+    "intent_unlock_mac_short_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock Mac"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear Mac"
+          }
+        }
+      }
+    },
+    "intent_unlock_mac_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock Mac"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear Mac"
+          }
+        }
+      }
+    },
+    "lock_screen" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Screen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquear Pantalla"
+          }
+        }
+      }
+    },
+    "lock_screen_confirm" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquear"
+          }
+        }
+      }
+    },
+    "lock_screen_confirmation_message" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will lock your Mac. You will need to enter your password to unlock it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esto bloqueará tu Mac. Necesitarás introducir tu contraseña para desbloquearlo."
+          }
+        }
+      }
+    },
+    "lock_screen_confirmation_title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock Screen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Bloquear Pantalla?"
+          }
+        }
+      }
+    },
+    "quality" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quality"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calidad"
+          }
+        }
+      }
+    },
+    "quality_high" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alta"
+          }
+        }
+      }
+    },
+    "quality_low" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baja"
+          }
+        }
+      }
+    },
+    "quality_medium" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media"
+          }
+        }
+      }
+    },
+    "screen_sharing" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen Sharing"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir Pantalla"
+          }
+        }
+      }
+    },
+    "screen_sharing_description" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View your Mac's screen in real-time. Tap to interact with your desktop."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ve la pantalla de tu Mac en tiempo real. Toca para interactuar con tu escritorio."
+          }
+        }
+      }
+    },
+    "start_streaming" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Streaming"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar Transmisión"
           }
         }
       }
@@ -331,6 +670,374 @@
         }
       }
     },
+    "unlock_outcome_already_unlocked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac was already unlocked. Nothing was typed."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El Mac ya estaba desbloqueado. No se ha escrito nada."
+          }
+        }
+      }
+    },
+    "unlock_outcome_authentication_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentication failed. Nothing was sent."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La autenticación ha fallado. No se ha enviado nada."
+          }
+        }
+      }
+    },
+    "unlock_outcome_authentication_needs_foreground" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open MacRemote to confirm with Face ID."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre MacRemote para confirmar con Face ID."
+          }
+        }
+      }
+    },
+    "unlock_outcome_busy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An unlock is already running."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya hay un desbloqueo en curso."
+          }
+        }
+      }
+    },
+    "unlock_outcome_cancelled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock cancelled."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloqueo cancelado."
+          }
+        }
+      }
+    },
+    "unlock_outcome_connection_lost" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection to the Mac was lost. Nothing was sent."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha perdido la conexión con el Mac. No se ha enviado nada."
+          }
+        }
+      }
+    },
+    "unlock_outcome_credential_unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pairing key is unavailable. Unlock your iPhone and try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clave de emparejamiento no está disponible. Desbloquea el iPhone e inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "unlock_outcome_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock failed."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo desbloquear el Mac."
+          }
+        }
+      }
+    },
+    "unlock_outcome_in_progress" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Another unlock is already in progress on the Mac."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya hay otro desbloqueo en curso en el Mac."
+          }
+        }
+      }
+    },
+    "unlock_outcome_input_not_permitted_on_mac" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacRemote Server needs Accessibility permission on the Mac. Nothing was typed."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacRemote Server necesita permiso de accesibilidad en el Mac. No se ha escrito nada."
+          }
+        }
+      }
+    },
+    "unlock_outcome_invalid_pairing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pairing key rejected. Save the key again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha rechazado la clave de emparejamiento. Guarda la clave de nuevo."
+          }
+        }
+      }
+    },
+    "unlock_outcome_local_network_denied" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Local Network for MacRemote in Settings > Privacy & Security > Local Network."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite el acceso de MacRemote a la red local en Ajustes > Privacidad y seguridad > Red local."
+          }
+        }
+      }
+    },
+    "unlock_outcome_lock_state_unknown" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't read the Mac's lock state. Nothing was typed."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo consultar el estado de bloqueo del Mac. No se ha escrito nada."
+          }
+        }
+      }
+    },
+    "unlock_outcome_mac_not_found" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Mac wasn't found on this network. It must be logged in with MacRemote Server running."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha encontrado el Mac en esta red. Debes haber iniciado sesión y tener MacRemote Server en ejecución."
+          }
+        }
+      }
+    },
+    "unlock_outcome_no_target_selected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open MacRemote, connect to your Mac and save the pairing key."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre MacRemote, conéctate al Mac y guarda la clave de emparejamiento."
+          }
+        }
+      }
+    },
+    "unlock_outcome_not_configured_on_mac" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remote Unlock is not set up on the Mac."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El desbloqueo remoto no está configurado en el Mac."
+          }
+        }
+      }
+    },
+    "unlock_outcome_not_paired" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pairing key saved. Open MacRemote and save it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay ninguna clave de emparejamiento guardada. Abre MacRemote y guárdala."
+          }
+        }
+      }
+    },
+    "unlock_outcome_not_verified" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password was typed, but the Mac did not report unlocked in time."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se escribió la contraseña, pero el Mac no confirmó el desbloqueo a tiempo."
+          }
+        }
+      }
+    },
+    "unlock_outcome_pairing_changed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pairing changed during confirmation. Nothing was sent."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El emparejamiento ha cambiado durante la confirmación. No se ha enviado nada."
+          }
+        }
+      }
+    },
+    "unlock_outcome_post_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Mac could not type the password."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El Mac no pudo escribir la contraseña."
+          }
+        }
+      }
+    },
+    "unlock_outcome_result_unknown" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock was sent, but no answer arrived. Check your Mac; it was not retried."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se envió la solicitud de desbloqueo, pero no llegó respuesta. Comprueba el Mac; no se ha vuelto a intentar."
+          }
+        }
+      }
+    },
+    "unlock_outcome_sent_unverified" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock was sent, but this Mac server can't confirm it. Update MacRemote Server."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se envió la solicitud de desbloqueo, pero este servidor Mac no puede confirmarla. Actualiza MacRemote Server."
+          }
+        }
+      }
+    },
+    "unlock_outcome_verified" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac unlocked."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El Mac se ha desbloqueado."
+          }
+        }
+      }
+    },
     "unlock_pair_first" : {
       "localizations" : {
         "en" : {
@@ -359,6 +1066,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clave de emparejamiento"
+          }
+        }
+      }
+    },
+    "unlock_pairing_save_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save the pairing key."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar la clave de emparejamiento."
+          }
+        }
+      }
+    },
+    "unlock_pairing_server_outdated" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key saved. Update MacRemote Server on this Mac to use Shortcuts."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave guardada. Actualiza MacRemote Server en este Mac para usar Atajos."
           }
         }
       }
@@ -395,305 +1134,66 @@
         }
       }
     },
-    "lock_screen" : {
-      "extractionState" : "stale",
+    "unlock_shortcut_legacy" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lock Screen"
+            "value" : "Save the pairing key again to use Shortcuts."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bloquear Pantalla"
+            "value" : "Vuelve a guardar la clave de emparejamiento para usar Atajos."
           }
         }
       }
     },
-    "lock_screen_confirm" : {
-      "extractionState" : "stale",
+    "unlock_shortcut_no_target" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lock"
+            "value" : "Save the pairing key while connected to use Shortcuts."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bloquear"
+            "value" : "Guarda la clave de emparejamiento mientras estás conectado para usar Atajos."
           }
         }
       }
     },
-    "lock_screen_confirmation_message" : {
-      "extractionState" : "stale",
+    "unlock_shortcut_require_faceid" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This will lock your Mac. You will need to enter your password to unlock it."
+            "value" : "Require Face ID for Action Button (opens the app when on)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esto bloqueará tu Mac. Necesitarás introducir tu contraseña para desbloquearlo."
+            "value" : "Exigir Face ID para el botón de acción (abre la app si está activado)"
           }
         }
       }
     },
-    "lock_screen_confirmation_title" : {
-      "extractionState" : "stale",
+    "unlock_shortcut_target" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lock Screen?"
+            "value" : "Shortcut unlocks: %@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Bloquear Pantalla?"
-          }
-        }
-      }
-    },
-    "Make sure MacRemote Server is running on your Mac" : {
-
-    },
-    "Mute" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Silencio"
-          }
-        }
-      }
-    },
-    "Next" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siguiente"
-          }
-        }
-      }
-    },
-    "Not Connected" : {
-
-    },
-    "Play/Pause" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reproducir/Pausar"
-          }
-        }
-      }
-    },
-    "Previous" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anterior"
-          }
-        }
-      }
-    },
-    "quality" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quality"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calidad"
-          }
-        }
-      }
-    },
-    "quality_high" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "High"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alta"
-          }
-        }
-      }
-    },
-    "quality_low" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Low"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Baja"
-          }
-        }
-      }
-    },
-    "quality_medium" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Medium"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Media"
-          }
-        }
-      }
-    },
-    "Right" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Derecho"
-          }
-        }
-      }
-    },
-    "screen_sharing" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Screen Sharing"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compartir Pantalla"
-          }
-        }
-      }
-    },
-    "screen_sharing_description" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View your Mac's screen in real-time. Tap to interact with your desktop."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ve la pantalla de tu Mac en tiempo real. Toca para interactuar con tu escritorio."
-          }
-        }
-      }
-    },
-    "Scroll" : {
-
-    },
-    "Searching for Macs..." : {
-
-    },
-    "start_streaming" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start Streaming"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Iniciar Transmisión"
-          }
-        }
-      }
-    },
-    "Tap to activate keyboard" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toca para activar el teclado"
-          }
-        }
-      }
-    },
-    "Tap to connect" : {
-
-    },
-    "Touch to move cursor" : {
-
-    },
-    "Type on the keyboard below" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Escribe en el teclado de abajo"
-          }
-        }
-      }
-    },
-    "Vol -" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vol -"
-          }
-        }
-      }
-    },
-    "Vol +" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vol +"
+            "value" : "El atajo desbloquea: %@"
           }
         }
       }

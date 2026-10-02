@@ -6,6 +6,10 @@ struct MacRemoteClientApp: App {
     @StateObject private var client = NetworkClient()
     @State private var showConnectionSheet = false
 
+    init() {
+        Task { await RemoteUnlockService.configureLive() }
+    }
+
     var body: some Scene {
         WindowGroup {
             NavigationStack {

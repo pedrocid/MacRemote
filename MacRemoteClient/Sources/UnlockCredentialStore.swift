@@ -1,11 +1,20 @@
 import Foundation
 import Security
 
-final class UnlockCredentialStore {
-    private let service = "com.pedrocid.MacRemoteClient.remote-unlock"
+enum UnlockCredentialError: Error, Equatable {
+    case invalidKeyFormat
+    case keychain(OSStatus)
+}
+
+final class UnlockCredentialStore: UnlockTokenStoring {
+    private let service = "com.naduda.pr.MacRemoteClient.remote-unlock"
     private let account = "pairing-token"
 
     var token: Data? {
+        try? readToken()
+    }
+
+    func readToken() throws -> Data? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -14,10 +23,18 @@ final class UnlockCredentialStore {
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
         var result: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else {
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        switch status {
+        case errSecItemNotFound:
             return nil
+        case errSecSuccess:
+            guard let data = result as? Data else {
+                throw UnlockCredentialError.keychain(errSecDecode)
+            }
+            return data
+        default:
+            throw UnlockCredentialError.keychain(status)
         }
-        return result as? Data
     }
 
     var hasToken: Bool {
@@ -26,14 +43,36 @@ final class UnlockCredentialStore {
 
     @discardableResult
     func save(pairingKey: String) -> Bool {
-        let normalized = pairingKey
+        do {
+            try saveToken(Self.parsePairingKey(pairingKey))
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    static func parsePairingKey(_ s: String) throws -> Data {
+        let normalized = s
             .filter(\.isHexDigit)
             .uppercased()
         guard normalized.count == 64, let data = Data(hexString: normalized) else {
-            return false
+            throw UnlockCredentialError.invalidKeyFormat
         }
+        return data
+    }
 
-        delete()
+    func saveToken(_ data: Data) throws {
+        let match: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
+        let update: [String: Any] = [kSecValueData as String: data]
+        let status = SecItemUpdate(match as CFDictionary, update as CFDictionary)
+        if status == errSecSuccess { return }
+        guard status == errSecItemNotFound else {
+            throw UnlockCredentialError.keychain(status)
+        }
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -41,16 +80,26 @@ final class UnlockCredentialStore {
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
             kSecValueData as String: data
         ]
-        return SecItemAdd(query as CFDictionary, nil) == errSecSuccess
+        let addStatus = SecItemAdd(query as CFDictionary, nil)
+        guard addStatus == errSecSuccess else {
+            throw UnlockCredentialError.keychain(addStatus)
+        }
     }
 
     func delete() {
+        try? deleteToken()
+    }
+
+    func deleteToken() throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account
         ]
-        SecItemDelete(query as CFDictionary)
+        let status = SecItemDelete(query as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw UnlockCredentialError.keychain(status)
+        }
     }
 }
 

@@ -1,6 +1,4 @@
 import Foundation
-import CryptoKit
-import LocalAuthentication
 import Network
 
 /// TCP Client that connects to a MacRemote server
@@ -13,7 +11,8 @@ final class NetworkClient: ObservableObject {
     @Published var isLoadingApps = false
     @Published var isScreenStreaming = false
     @Published private(set) var isUnlockAvailable = false
-    @Published private(set) var hasUnlockPairingKey = false
+    @Published private(set) var pairingState: PairingState = .unpaired
+    var hasUnlockPairingKey: Bool { pairingState != .unpaired }
     @Published var unlockStatus: String?
     @Published var isAuthenticatingForUnlock = false
 
@@ -22,36 +21,42 @@ final class NetworkClient: ObservableObject {
 
     private var connection: NWConnection?
     private let queue = DispatchQueue(label: "com.macremote.client", qos: .userInteractive)
-    private let unlockCredentialStore = UnlockCredentialStore()
-    private var unlockChallenge: Data?
+    private let pairingStore = RemoteUnlockService.livePairingStore
+    private var connectedEndpoint: NWEndpoint?
+    private var connectedServerName: String?
+    private var connectedServerId: String?
 
     init() {
-        hasUnlockPairingKey = unlockCredentialStore.hasToken
+        pairingState = pairingStore.state()
     }
 
     // MARK: - Connection
 
-    func connect(to endpoint: NWEndpoint) {
+    func connect(to endpoint: NWEndpoint, name: String) {
         disconnect()
+        connectedEndpoint = endpoint
+        connectedServerName = name
 
         connection = NWConnection(to: endpoint, using: .tcp)
 
-        connection?.stateUpdateHandler = { [weak self] state in
+        connection?.stateUpdateHandler = { [weak self, weak currentConnection = connection] state in
             DispatchQueue.main.async {
+                guard let self, self.connection === currentConnection else { return }
                 switch state {
                 case .ready:
-                    self?.isConnected = true
-                    self?.connectionError = nil
-                    self?.startReceiving()
+                    self.isConnected = true
+                    self.connectionError = nil
+                    self.startReceiving()
                     print("[Client] Connected")
 
                 case .failed(let error):
-                    self?.isConnected = false
-                    self?.connectionError = error.localizedDescription
+                    self.disconnect()
+                    self.connectionError = error.localizedDescription
                     print("[Client] Failed: \(error)")
 
                 case .cancelled:
-                    self?.isConnected = false
+                    self.clearConnectedServer()
+                    self.isConnected = false
                     print("[Client] Cancelled")
 
                 default:
@@ -67,6 +72,14 @@ final class NetworkClient: ObservableObject {
         connection?.cancel()
         connection = nil
         isConnected = false
+        clearConnectedServer()
+    }
+
+    private func clearConnectedServer() {
+        connectedEndpoint = nil
+        connectedServerName = nil
+        connectedServerId = nil
+        isUnlockAvailable = false
     }
 
     // MARK: - Sending Messages
@@ -151,48 +164,55 @@ final class NetworkClient: ObservableObject {
 
     @discardableResult
     func saveUnlockPairingKey(_ pairingKey: String) -> Bool {
-        let saved = unlockCredentialStore.save(pairingKey: pairingKey)
-        hasUnlockPairingKey = unlockCredentialStore.hasToken
-        unlockStatus = saved ? nil : String(localized: "unlock_invalid_pairing_key")
-        return saved
+        guard let serverId = connectedServerId else {
+            unlockStatus = String(localized: "unlock_pairing_server_outdated")
+            return false
+        }
+        let token: Data
+        do {
+            token = try UnlockCredentialStore.parsePairingKey(pairingKey)
+        } catch {
+            unlockStatus = String(localized: "unlock_invalid_pairing_key")
+            return false
+        }
+        do {
+            try pairingStore.pair(token: token, serverId: serverId, displayName: connectedServerName ?? "Mac")
+            pairingState = pairingStore.state()
+            unlockStatus = nil
+            return true
+        } catch {
+            pairingState = pairingStore.state()
+            unlockStatus = String(localized: "unlock_pairing_save_failed")
+            return false
+        }
     }
 
     func removeUnlockPairingKey() {
-        unlockCredentialStore.delete()
-        hasUnlockPairingKey = false
-        unlockStatus = nil
+        do {
+            try pairingStore.unpair()
+            unlockStatus = nil
+        } catch {
+            unlockStatus = String(localized: "unlock_pairing_save_failed")
+        }
+        pairingState = pairingStore.state()
     }
 
     func requestUnlock() {
-        guard isUnlockAvailable, let challenge = unlockChallenge else {
-            unlockStatus = String(localized: "unlock_not_available")
+        guard !isAuthenticatingForUnlock else { return }
+        guard let endpoint = connectedEndpoint else {
+            unlockStatus = String(localized: "unlock_outcome_connection_lost")
             return
         }
-        guard let token = unlockCredentialStore.token else {
-            unlockStatus = String(localized: "unlock_pair_first")
-            return
-        }
-
-        let context = LAContext()
-        context.localizedCancelTitle = String(localized: "cancel")
+        let name = connectedServerName ?? "Mac"
         isAuthenticatingForUnlock = true
-        context.evaluatePolicy(
-            .deviceOwnerAuthentication,
-            localizedReason: String(localized: "unlock_auth_reason")
-        ) { [weak self] success, error in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                self.isAuthenticatingForUnlock = false
-                guard success else {
-                    self.unlockStatus = error?.localizedDescription ?? String(localized: "unlock_auth_failed")
-                    return
-                }
-                let signature = Data(HMAC<SHA256>.authenticationCode(
-                    for: challenge + Data("unlock".utf8),
-                    using: SymmetricKey(data: token)
-                ))
-                self.unlockStatus = String(localized: "unlock_sending")
-                self.send(.unlock(signature: signature))
+        Task {
+            let outcome = await RemoteUnlockService.shared.unlock(
+                route: .directSession(NetworkUnlockSession(endpoint: endpoint, name: name), displayName: name),
+                reason: String(localized: "unlock_auth_reason")
+            )
+            await MainActor.run {
+                unlockStatus = String(localized: String.LocalizationValue(outcome.localizationKey))
+                isAuthenticatingForUnlock = false
             }
         }
     }
@@ -226,11 +246,11 @@ final class NetworkClient: ObservableObject {
         guard let connection = connection else { return }
 
         connection.receive(minimumIncompleteLength: 4, maximumLength: 4) { [weak self] data, _, isComplete, error in
-            guard let self = self else { return }
+            guard let self = self, self.connection === connection else { return }
 
             if isComplete || error != nil {
                 DispatchQueue.main.async {
-                    self.isConnected = false
+                    self.disconnect()
                 }
                 return
             }
@@ -271,9 +291,9 @@ final class NetworkClient: ObservableObject {
 
     private func handleMessage(_ message: ServerMessage) {
         switch message {
-        case .connected(let width, let height, let challenge, let unlockAvailable):
+        case .connected(let width, let height, _, let unlockAvailable, let serverId):
             screenSize = CGSize(width: width, height: height)
-            unlockChallenge = challenge
+            connectedServerId = serverId
             isUnlockAvailable = unlockAvailable
             print("[Client] Screen size: \(screenSize)")
 
@@ -300,11 +320,8 @@ final class NetworkClient: ObservableObject {
             isScreenStreaming = false
             print("[Client] Screen streaming stopped")
 
-        case .unlockResult(let success, let message):
-            unlockStatus = success ? String(localized: "unlock_command_sent") : message
-
-        case .unlockChallenge(let challenge):
-            unlockChallenge = challenge
+        case .unlockResult, .unlockChallenge:
+            break
         }
     }
 }

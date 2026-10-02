@@ -1,6 +1,5 @@
 import Foundation
 import AppKit
-import CryptoKit
 import Network
 
 /// Main controller that coordinates the server, Bonjour, and input handling
@@ -12,10 +11,36 @@ final class ServerManager: ObservableObject {
     private let inputController = InputController()
     private let screenCaptureManager = ScreenCaptureManager()
     private let remoteUnlockStore = RemoteUnlockStore()
+    private let serverIdentity = ServerIdentity()
+    private let unlockTypingQueue = DispatchQueue(label: "com.macremote.unlock-typing", qos: .userInitiated)
+    private lazy var unlockVerifier = UnlockVerifier<ObjectIdentifier>(
+        loadSecrets: { [remoteUnlockStore] in
+            guard let token = remoteUnlockStore.token,
+                  let password = remoteUnlockStore.password else { return nil }
+            return UnlockSecrets(token: token, password: password)
+        },
+        inputPermitted: { AXIsProcessTrusted() },
+        lockState: CGSessionLockStateProvider(),
+        typePassword: { [inputController, unlockTypingQueue] password in
+            await withCheckedContinuation { continuation in
+                unlockTypingQueue.async {
+                    let result = inputController.unlockScreen(
+                        password: password,
+                        lockState: CGSessionLockStateProvider()
+                    )
+                    continuation.resume(returning: result)
+                }
+            }
+        },
+        randomChallenge: { RemoteUnlockStore.randomBytes(count: 32) },
+        sleep: { interval in
+            try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+        },
+        now: { Date() }
+    )
 
     // Track which clients are receiving screen stream
     private var streamingClients = Set<ObjectIdentifier>()
-    private var unlockChallenges: [ObjectIdentifier: Data] = [:]
 
     @Published var isRunning = false
     @Published var connectedClients = 0
@@ -57,7 +82,7 @@ final class ServerManager: ObservableObject {
     func start() {
         guard hasAccessibilityPermission else {
             lastError = "Accessibility permission required"
-            _ = InputController.checkAccessibilityPermission()
+            _ = InputController.checkAccessibilityPermission(prompt: true)
             return
         }
 
@@ -106,7 +131,8 @@ final class ServerManager: ObservableObject {
     }
 
     func requestAccessibilityPermission() {
-        // Open System Preferences directly to Accessibility
+        // Registers the app in the Accessibility list (system prompt), then opens the pane
+        _ = InputController.checkAccessibilityPermission(prompt: true)
         InputController.openAccessibilityPreferences()
     }
 
@@ -183,15 +209,15 @@ final class ServerManager: ObservableObject {
             guard let self = self else { return }
             self.connectedClients = self.server.connectedClientsCount
 
-            let challenge = RemoteUnlockStore.randomBytes(count: 32)
-            self.unlockChallenges[ObjectIdentifier(connection)] = challenge
+            let challenge = self.unlockVerifier.issueChallenge(for: ObjectIdentifier(connection))
             let screenSize = self.inputController.screenSize
             self.server.send(
                 .connected(
                     screenWidth: screenSize.width,
                     screenHeight: screenSize.height,
                     unlockChallenge: self.isRemoteUnlockConfigured ? challenge : nil,
-                    unlockAvailable: self.isRemoteUnlockConfigured
+                    unlockAvailable: self.isRemoteUnlockConfigured,
+                    serverId: self.serverIdentity.id
                 ),
                 to: connection
             )
@@ -203,7 +229,7 @@ final class ServerManager: ObservableObject {
 
             // Clean up streaming state for disconnected client
             let clientId = ObjectIdentifier(connection)
-            self.unlockChallenges.removeValue(forKey: clientId)
+            self.unlockVerifier.removeConnection(clientId)
             if self.streamingClients.contains(clientId) {
                 self.streamingClients.remove(clientId)
                 print("[ServerManager] Removed disconnected client from streaming clients")
@@ -282,51 +308,32 @@ final class ServerManager: ObservableObject {
             stopScreenStreamingForClient(connection)
 
         case .unlock(let signature):
-            handleUnlock(signature: signature, from: connection)
+            let clientId = ObjectIdentifier(connection)
+            Task { @MainActor in
+                let result = await unlockVerifier.handleUnlock(signature: signature, from: clientId)
+                server.send(
+                    .unlockResult(success: result.code.isSuccess, message: diagnostic(result.code), code: result.code),
+                    to: connection
+                )
+                if let challenge = result.nextChallenge {
+                    server.send(.unlockChallenge(challenge), to: connection)
+                }
+            }
         }
     }
 
-    private func handleUnlock(signature: Data, from connection: NWConnection) {
-        let clientId = ObjectIdentifier(connection)
-        guard let token = remoteUnlockStore.token,
-              let password = remoteUnlockStore.password,
-              let challenge = unlockChallenges[clientId] else {
-            server.send(.unlockResult(success: false, message: "Remote unlock is not configured on this Mac."), to: connection)
-            return
+    private func diagnostic(_ code: UnlockResultCode) -> String {
+        switch code {
+        case .verified: return "Mac unlocked."
+        case .alreadyUnlocked: return "Mac was already unlocked."
+        case .inProgress: return "Another unlock is in progress."
+        case .lockStateUnknown: return "Mac lock state could not be confirmed."
+        case .invalidSignature: return "The unlock request was invalid."
+        case .notConfigured: return "Remote unlock is not configured on this Mac."
+        case .inputNotPermitted: return "Accessibility permission is required."
+        case .postFailed: return "The Mac could not post unlock events."
+        case .notVerified: return "The Mac did not confirm an unlock."
+        case .unrecognized: return "Unknown unlock result."
         }
-
-        let expected = Data(HMAC<SHA256>.authenticationCode(
-            for: challenge + Data("unlock".utf8),
-            using: SymmetricKey(data: token)
-        ))
-        let nextChallenge = RemoteUnlockStore.randomBytes(count: 32)
-        unlockChallenges[clientId] = nextChallenge
-
-        guard signature.constantTimeEquals(expected) else {
-            server.send(.unlockResult(success: false, message: "The pairing key is invalid."), to: connection)
-            server.send(.unlockChallenge(nextChallenge), to: connection)
-            return
-        }
-
-        let posted = inputController.unlockScreen(password: password)
-        server.send(
-            .unlockResult(
-                success: posted,
-                message: posted
-                    ? "Unlock command sent to the Mac."
-                    : "The Mac could not post unlock events."
-            ),
-            to: connection
-        )
-        server.send(.unlockChallenge(nextChallenge), to: connection)
-    }
-}
-
-private extension Data {
-    func constantTimeEquals(_ other: Data) -> Bool {
-        guard count == other.count else { return false }
-        return zip(self, other).reduce(UInt8(0)) { result, pair in
-            result | (pair.0 ^ pair.1)
-        } == 0
     }
 }

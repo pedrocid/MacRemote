@@ -64,14 +64,14 @@ enum RemoteMessage: Codable {
 
 /// Messages sent from macOS server to iOS client
 enum ServerMessage: Codable {
-    case connected(screenWidth: Double, screenHeight: Double, unlockChallenge: Data?, unlockAvailable: Bool)
+    case connected(screenWidth: Double, screenHeight: Double, unlockChallenge: Data?, unlockAvailable: Bool, serverId: String?)
     case pong
     case error(message: String)
     case appList(apps: [AppInfo])
     case screenFrame(frame: ScreenFrame)
     case screenStreamStarted
     case screenStreamStopped
-    case unlockResult(success: Bool, message: String)
+    case unlockResult(success: Bool, message: String, code: UnlockResultCode?)
     case unlockChallenge(Data)
 }
 

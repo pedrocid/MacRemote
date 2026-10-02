@@ -1,0 +1,1 @@
+../../../MacRemoteServer/Sources/ServerIdentity.swift

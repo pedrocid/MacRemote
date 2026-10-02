@@ -21,6 +21,13 @@ final class NetworkServer {
     func start(port: UInt16 = NetworkConstants.defaultPort) throws {
         let parameters = NWParameters.tcp
         parameters.allowLocalEndpointReuse = true
+        // Reap half-open connections (e.g. an app killed or reinstalled without a FIN) within ~25s.
+        if let tcp = parameters.defaultProtocolStack.transportProtocol as? NWProtocolTCP.Options {
+            tcp.enableKeepalive = true
+            tcp.keepaliveIdle = 10
+            tcp.keepaliveInterval = 5
+            tcp.keepaliveCount = 3
+        }
 
         let nwPort = NWEndpoint.Port(rawValue: port) ?? .any
         listener = try NWListener(using: parameters, on: nwPort)
@@ -58,6 +65,7 @@ final class NetworkServer {
     }
 
     func send(_ message: ServerMessage, to connection: NWConnection) {
+        guard connections.contains(where: { $0 === connection }) else { return }
         do {
             let data = try MessageFrame.encode(message)
             print("[Server] Sending \(data.count) bytes")
@@ -115,7 +123,9 @@ final class NetworkServer {
     }
 
     private func removeConnection(_ connection: NWConnection) {
+        guard connections.contains(where: { $0 === connection }) else { return }
         connections.removeAll { $0 === connection }
+        connection.cancel()
         DispatchQueue.main.async { [weak self] in
             self?.onClientDisconnected?(connection)
         }
@@ -128,6 +138,7 @@ final class NetworkServer {
 
             if let error = error {
                 print("[Server] Receive error: \(error)")
+                self.removeConnection(connection)
                 return
             }
 
@@ -143,12 +154,19 @@ final class NetworkServer {
 
             let length = lengthData.withUnsafeBytes { $0.load(as: UInt32.self).bigEndian }
 
+            guard length > 0, Int(length) <= UnlockWire.maxFrameBytes else {
+                print("[Server] Invalid frame length \(length), dropping connection")
+                self.removeConnection(connection)
+                return
+            }
+
             // Now read the actual message
             connection.receive(minimumIncompleteLength: Int(length), maximumLength: Int(length)) { [weak self] messageData, _, _, error in
                 guard let self = self else { return }
 
                 if let error = error {
                     print("[Server] Receive message error: \(error)")
+                    self.removeConnection(connection)
                     return
                 }
 
@@ -170,6 +188,6 @@ final class NetworkServer {
     }
 
     var connectedClientsCount: Int {
-        connections.count
+        connections.filter { $0.state == .ready }.count
     }
 }

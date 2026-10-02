@@ -2,6 +2,7 @@ import Foundation
 import ScreenCaptureKit
 import VideoToolbox
 import CoreMedia
+import CoreGraphics
 
 /// Manages screen capture and H.264 encoding for streaming
 @MainActor
@@ -32,14 +33,8 @@ final class ScreenCaptureManager: NSObject, ObservableObject {
     // MARK: - Permission
 
     func checkPermission() async {
-        do {
-            // This will trigger permission dialog if not granted
-            _ = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
-            hasScreenRecordingPermission = true
-        } catch {
-            hasScreenRecordingPermission = false
-            print("[ScreenCapture] Permission check failed: \(error)")
-        }
+        // Preflight only: never shows the system prompt. The prompt appears on first real use (startStreaming).
+        hasScreenRecordingPermission = CGPreflightScreenCaptureAccess()
     }
 
     // MARK: - Stream Control

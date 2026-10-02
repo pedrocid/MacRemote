@@ -7,7 +7,7 @@ final class RemoteUnlockStore {
         static let token = "pairing-token"
     }
 
-    private let service = "com.pedrocid.MacRemoteServer.remote-unlock"
+    private let service = "com.naduda.pr.MacRemoteServer.remote-unlock"
 
     var password: String? {
         guard let data = read(account: Account.password) else { return nil }
@@ -47,7 +47,7 @@ final class RemoteUnlockStore {
     static func randomBytes(count: Int) -> Data {
         var bytes = [UInt8](repeating: 0, count: count)
         guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
-            return Data(UUID().uuidString.utf8)
+            fatalError("Secure random byte generation failed")
         }
         return Data(bytes)
     }

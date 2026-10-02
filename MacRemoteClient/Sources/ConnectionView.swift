@@ -28,7 +28,7 @@ struct ConnectionView: View {
                     Section("Available Macs") {
                         ForEach(browser.servers) { server in
                             Button {
-                                client.connect(to: server.endpoint)
+                                client.connect(to: server.endpoint, name: server.name)
                                 dismiss()
                             } label: {
                                 HStack {
